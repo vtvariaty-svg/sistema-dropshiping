@@ -13,6 +13,7 @@ import { supplierRoutes } from './modules/suppliers/supplier.routes';
 import { purchaseOrderRoutes } from './modules/purchase-orders/po.routes';
 import { trackingRoutes } from './modules/tracking/tracking.routes';
 import { financeRoutes } from './modules/finance/finance.routes';
+import { intelligenceRoutes } from './modules/intelligence/intelligence.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
@@ -39,6 +40,7 @@ export async function buildApp() {
     await app.register(purchaseOrderRoutes);
     await app.register(trackingRoutes);
     await app.register(financeRoutes);
+    await app.register(intelligenceRoutes);
 
     // Webhook receiver (encapsulated — custom JSON parser)
     await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });

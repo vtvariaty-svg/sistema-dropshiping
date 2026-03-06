@@ -19,7 +19,9 @@ const navItems = [
     { label: 'Profit Analytics', href: '/dashboard/analytics/profit', icon: '💰' },
     { label: 'Fee Settings', href: '/dashboard/settings/fees', icon: '⚙️' },
     { label: 'Shipping Settings', href: '/dashboard/settings/shipping', icon: '🚚' },
-    { label: 'Intelligence', href: '#', icon: '🧠', soon: true },
+    { label: 'Products', href: '/dashboard/intelligence/products', icon: '📋' },
+    { label: 'Clusters', href: '/dashboard/intelligence/clusters', icon: '🧩' },
+    { label: 'Ranking', href: '/dashboard/intelligence/ranking', icon: '🏆' },
 ];
 
 export function Sidebar({ user, open, onClose }: SidebarProps) {
@@ -72,11 +74,6 @@ export function Sidebar({ user, open, onClose }: SidebarProps) {
                         >
                             <span className="text-lg">{item.icon}</span>
                             <span>{item.label}</span>
-                            {item.soon && (
-                                <span className="ml-auto text-[10px] uppercase tracking-wider text-white/20 bg-white/5 px-2 py-0.5 rounded-full">
-                                    Soon
-                                </span>
-                            )}
                         </a>
                     ))}
                 </nav>

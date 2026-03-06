@@ -34,6 +34,10 @@ model Tenant {
   fee_profiles       FeeProfile[]
   shipping_profiles  ShippingProfile[]
   order_profits      OrderProfit[]
+  products           Product[]
+  product_clusters   ProductCluster[]
+  cluster_links      ClusterLink[]
+  product_scores     ProductScore[]
 
   @@map("tenants")
 }
@@ -489,4 +493,78 @@ model OrderProfit {
   @@index([tenant_id])
   @@index([order_id])
   @@map("order_profits")
+}
+
+// ─── MODULE 7: Product Intelligence ─────────────────────────────
+
+model Product {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  name_raw   String
+  category   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  tenant        Tenant        @relation(fields: [tenant_id], references: [id])
+  cluster_links ClusterLink[]
+
+  @@index([tenant_id])
+  @@map("products")
+}
+
+model ProductCluster {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenant_id   String   @db.Uuid
+  name_norm   String
+  fingerprint String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenant_id], references: [id])
+  cluster_links ClusterLink[]
+  score         ProductScore?
+
+  @@unique([tenant_id, fingerprint])
+  @@index([tenant_id])
+  @@map("product_clusters")
+}
+
+model ClusterLink {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  product_id String   @db.Uuid
+  cluster_id String   @db.Uuid
+  created_at DateTime @default(now())
+
+  tenant  Tenant         @relation(fields: [tenant_id], references: [id])
+  product Product        @relation(fields: [product_id], references: [id])
+  cluster ProductCluster @relation(fields: [cluster_id], references: [id])
+
+  @@unique([tenant_id, product_id, cluster_id])
+  @@index([tenant_id])
+  @@index([cluster_id])
+  @@map("cluster_links")
+}
+
+model ProductScore {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenant_id         String   @db.Uuid
+  cluster_id        String   @db.Uuid
+  margin_score      Decimal  @db.Decimal(8, 4)
+  demand_score      Decimal  @db.Decimal(8, 4)
+  competition_score Decimal  @db.Decimal(8, 4)
+  viral_score       Decimal  @db.Decimal(8, 4)
+  final_score       Decimal  @db.Decimal(8, 4)
+  recommendation    String
+  score_version     String   @default("v1")
+  calculated_at     DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  tenant  Tenant         @relation(fields: [tenant_id], references: [id])
+  cluster ProductCluster @relation(fields: [cluster_id], references: [id])
+
+  @@unique([tenant_id, cluster_id])
+  @@index([tenant_id])
+  @@index([cluster_id])
+  @@map("product_scores")
 }
