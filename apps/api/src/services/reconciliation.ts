@@ -36,6 +36,8 @@ export async function reconcileOrderMappingStatus(orderId: string, tenantId: str
         include: { items: true },
     });
     if (!order) return null;
+    // Don't downgrade orders that already have POs
+    if (order.operational_status === 'PO_CREATED' || order.operational_status === 'FULFILLED') return order.operational_status;
 
     let allMapped = true;
     for (const item of order.items) {
@@ -58,7 +60,7 @@ export async function reconcileOrderMappingStatus(orderId: string, tenantId: str
 
 export async function reconcileAllOrdersForTenant(tenantId: string) {
     const orders = await prisma.order.findMany({
-        where: { tenant_id: tenantId, operational_status: { in: ['NEW', 'NEEDS_MAPPING'] } },
+        where: { tenant_id: tenantId, operational_status: { in: ['NEW', 'NEEDS_MAPPING', 'READY_FOR_PO'] } },
         select: { id: true },
     });
     for (const order of orders) {

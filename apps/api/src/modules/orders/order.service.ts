@@ -178,7 +178,11 @@ export async function listOrders(tenantId: string, query: ListOrdersQuery) {
 export async function getOrderDetail(orderId: string, tenantId: string) {
     return prisma.order.findFirst({
         where: { id: orderId, tenant_id: tenantId },
-        include: { items: true, addresses: true, events: { orderBy: { created_at: 'desc' } } },
+        include: {
+            items: true, addresses: true,
+            events: { orderBy: { created_at: 'desc' } },
+            purchase_orders: { include: { supplier: { select: { name: true } } }, orderBy: { created_at: 'desc' } },
+        },
     });
 }
 

@@ -13,53 +13,29 @@ interface OrderDetail {
     items: Array<{ id: string; title: string; sku: string | null; variant_id: string | null; qty: number; price: string; discount: string }>;
     addresses: Array<{ id: string; type: string; name: string | null; phone: string | null; address1: string | null; city: string | null; province: string | null; zip: string | null; country: string | null }>;
     events: Array<{ id: string; type: string; channel: string; payload_json: unknown; created_at: string }>;
+    purchase_orders?: Array<{ id: string; status: string; total_cost: string; supplier: { name: string } }>;
 }
-
-type MappingResult = { supplier: { name: string }; supplier_product: { name: string; supplier_sku: string } } | null;
 
 export default function OrderDetailPage() {
     const params = useParams();
     const orderId = params.id as string;
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
-    const [reimporting, setReimporting] = useState(false);
-    const [reconciling, setReconciling] = useState(false);
+    const [acting, setActing] = useState(false);
     const [message, setMessage] = useState('');
-    const [itemMappings, setItemMappings] = useState<Record<string, MappingResult>>({});
 
     useEffect(() => { loadOrder(); }, [orderId]);
 
     const loadOrder = async () => {
-        try {
-            const data = await apiFetch<OrderDetail>(`/orders/${orderId}`);
-            setOrder(data);
-            // Load mapping info for each item
-            const mappings: Record<string, MappingResult> = {};
-            for (const item of data.items) {
-                try {
-                    const params = new URLSearchParams();
-                    if (item.sku) params.set('shopify_sku', item.sku);
-                    if (item.variant_id) params.set('shopify_variant_id', item.variant_id);
-                    // We'll just check via sku-mappings list endpoint
-                    mappings[item.id] = null; // default unmapped
-                } catch { }
-            }
-            setItemMappings(mappings);
-        } catch { } finally { setLoading(false); }
+        try { setOrder(await apiFetch<OrderDetail>(`/orders/${orderId}`)); } catch { } finally { setLoading(false); }
     };
 
-    const handleReimport = async () => {
-        setReimporting(true); setMessage('');
-        try { await apiFetch(`/orders/${orderId}/reimport`, { method: 'POST' }); setMessage('Reimport enqueued.'); } catch { setMessage('Failed'); } finally { setReimporting(false); }
-    };
-
-    const handleReconcile = async () => {
-        setReconciling(true); setMessage('');
+    const handleAction = async (action: string) => {
+        setActing(true); setMessage('');
         try {
-            const res = await apiFetch<{ operational_status: string }>(`/orders/${orderId}/reconcile-mapping`, { method: 'POST' });
-            setMessage(`Status updated: ${res.operational_status}`);
-            loadOrder();
-        } catch { setMessage('Reconciliation failed'); } finally { setReconciling(false); }
+            await apiFetch(`/orders/${orderId}/${action}`, { method: 'POST' });
+            setMessage(`${action} completed.`); loadOrder();
+        } catch (e) { setMessage(`Failed: ${e}`); } finally { setActing(false); }
     };
 
     if (loading) return <div className="text-white/30">Loading...</div>;
@@ -70,23 +46,24 @@ export default function OrderDetailPage() {
     const opColor = (s: string | null) => {
         if (s === 'READY_FOR_PO') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
         if (s === 'NEEDS_MAPPING') return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+        if (s === 'PO_CREATED') return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        if (s === 'FULFILLED') return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
         return 'bg-white/5 text-white/40 border-white/10';
     };
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <a href="/dashboard/ops/orders" className="text-sm text-brand-400 hover:text-brand-300">← Back to Orders</a>
                     <h1 className="text-2xl font-bold text-white mt-1">Order #{order.external_order_number}</h1>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={handleReconcile} disabled={reconciling} className="btn-secondary text-sm disabled:opacity-50">
-                        {reconciling ? 'Reconciling...' : '🔍 Reconcile Mapping'}
-                    </button>
-                    <button onClick={handleReimport} disabled={reimporting} className="btn-primary text-sm disabled:opacity-50">
-                        {reimporting ? 'Reimporting...' : '🔄 Reimport'}
-                    </button>
+                <div className="flex gap-2 flex-wrap">
+                    {order.operational_status === 'READY_FOR_PO' && (
+                        <button onClick={() => handleAction('create-po')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">🛒 Create Purchase Order</button>
+                    )}
+                    <button onClick={() => handleAction('reconcile-mapping')} disabled={acting} className="btn-secondary text-sm disabled:opacity-50">🔍 Reconcile</button>
+                    <button onClick={() => handleAction('reimport')} disabled={acting} className="text-sm px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:bg-white/10 disabled:opacity-50">🔄 Reimport</button>
                 </div>
             </div>
 
@@ -97,7 +74,7 @@ export default function OrderDetailPage() {
                     <span className="text-2xl">⚠️</span>
                     <div>
                         <p className="text-orange-300 font-medium">This order needs SKU mapping</p>
-                        <p className="text-orange-300/60 text-sm">Some items don&apos;t have a supplier mapping. Go to SKU Mappings to configure.</p>
+                        <p className="text-orange-300/60 text-sm">Go to SKU Mappings to configure, then reconcile.</p>
                     </div>
                 </div>
             )}
@@ -118,6 +95,25 @@ export default function OrderDetailPage() {
                     <div><span className="text-white/40 block">Date</span><span className="text-white">{new Date(order.created_at).toLocaleString()}</span></div>
                 </div>
             </div>
+
+            {/* Purchase Orders */}
+            {order.purchase_orders && order.purchase_orders.length > 0 && (
+                <div className="card">
+                    <h2 className="text-lg font-semibold text-white mb-4">Purchase Orders ({order.purchase_orders.length})</h2>
+                    <div className="space-y-2">
+                        {order.purchase_orders.map((po) => (
+                            <div key={po.id} className="flex items-center justify-between py-2 border-b border-white/5">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/70 text-sm">{po.supplier.name}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${po.status === 'DISPATCHED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>{po.status}</span>
+                                    <span className="text-white/40 font-mono text-xs">{Number(po.total_cost).toFixed(2)}</span>
+                                </div>
+                                <a href={`/dashboard/ops/purchase-orders/${po.id}`} className="text-xs text-brand-400 hover:text-brand-300">View PO →</a>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Line Items */}
             <div className="card">

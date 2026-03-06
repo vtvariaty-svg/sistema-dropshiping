@@ -12,6 +12,7 @@ const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
     { label: 'Integrations', href: '/dashboard/integrations/shopify', icon: '🔗' },
     { label: 'Orders', href: '/dashboard/ops/orders', icon: '📦' },
+    { label: 'Purchase Orders', href: '/dashboard/ops/purchase-orders', icon: '🛒' },
     { label: 'Suppliers', href: '/dashboard/ops/suppliers', icon: '🏭' },
     { label: 'Products', href: '/dashboard/ops/supplier-products', icon: '🏷️' },
     { label: 'SKU Mappings', href: '/dashboard/ops/sku-mappings', icon: '🔀' },
