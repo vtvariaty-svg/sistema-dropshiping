@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  plan       String   @default("free")
+  created_at DateTime @default(now())
+
+  users      User[]
+  audit_logs AuditLog[]
+
+  @@map("tenants")
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenant_id     String   @db.Uuid
+  email         String
+  password_hash String
+  role          String   @default("operator")
+  created_at    DateTime @default(now())
+
+  tenant         Tenant         @relation(fields: [tenant_id], references: [id])
+  refresh_tokens RefreshToken[]
+  audit_logs     AuditLog[]     @relation("actor")
+
+  @@unique([tenant_id, email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String
+  revoked_at DateTime?
+  expires_at DateTime
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([token_hash])
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenant_id     String   @db.Uuid
+  actor_user_id String   @db.Uuid
+  entity        String
+  entity_id     String?
+  action        String
+  payload_json  Json?
+  created_at    DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  actor  User   @relation("actor", fields: [actor_user_id], references: [id])
+
+  @@index([tenant_id])
+  @@map("audit_log")
+}

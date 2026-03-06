@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface-900 text-white antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl
+           bg-gradient-to-r from-brand-600 to-brand-500
+           text-white font-semibold text-sm
+           shadow-lg shadow-brand-500/25
+           hover:shadow-brand-500/40 hover:from-brand-500 hover:to-brand-400
+           transition-all duration-200 ease-out
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-brand-500/25;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl
+           bg-surface-800/50 border border-white/10
+           text-white placeholder-white/30
+           focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50
+           transition-all duration-200;
+  }
+
+  .card {
+    @apply rounded-2xl bg-surface-800/40 border border-white/5
+           backdrop-blur-sm p-6;
+  }
+
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+  }
+}
