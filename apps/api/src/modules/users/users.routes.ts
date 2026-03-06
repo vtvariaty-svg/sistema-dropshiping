@@ -41,7 +41,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 logger.info('User created', {
                     traceId: request.traceId,
                     tenantId: user.tenantId,
-                    adminEmail: user.email,
+                    adminId: user.userId,
                     newUserEmail: newUser.email,
                 });
 
@@ -60,7 +60,7 @@ export async function userRoutes(fastify: FastifyInstance) {
             const user = request.currentUser!;
             const { id } = request.params as { id: string };
 
-            if (user.id === id) {
+            if (user.userId === id) {
                 return reply.code(400).send({ error: 'Cannot delete yourself' });
             }
 
@@ -70,7 +70,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 logger.info('User deleted', {
                     traceId: request.traceId,
                     tenantId: user.tenantId,
-                    adminEmail: user.email,
+                    adminId: user.userId,
                     deletedUserId: id,
                 });
 
