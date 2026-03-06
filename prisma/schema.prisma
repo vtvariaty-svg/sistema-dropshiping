@@ -13,8 +13,11 @@ model Tenant {
   plan       String   @default("free")
   created_at DateTime @default(now())
 
-  users      User[]
-  audit_logs AuditLog[]
+  users            User[]
+  audit_logs       AuditLog[]
+  shopify_stores   ShopifyStore[]
+  shopify_webhooks ShopifyWebhook[]
+  dead_letter_jobs DeadLetterJob[]
 
   @@map("tenants")
 }
@@ -64,4 +67,60 @@ model AuditLog {
 
   @@index([tenant_id])
   @@map("audit_log")
+}
+
+// ─── MODULE 1: Shopify Integration ───────────────────────────────
+
+model ShopifyStore {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenant_id        String   @db.Uuid
+  shop_domain      String
+  access_token_enc String
+  scopes           String
+  status           String   @default("active")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  tenant   Tenant           @relation(fields: [tenant_id], references: [id])
+  webhooks ShopifyWebhook[]
+
+  @@unique([tenant_id, shop_domain])
+  @@index([tenant_id])
+  @@map("shopify_stores")
+}
+
+model ShopifyWebhook {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenant_id    String    @db.Uuid
+  store_id     String    @db.Uuid
+  topic        String
+  webhook_id   String
+  payload_raw  Json
+  received_at  DateTime  @default(now())
+  processed_at DateTime?
+  status       String    @default("pending")
+  error        String?
+
+  tenant Tenant       @relation(fields: [tenant_id], references: [id])
+  store  ShopifyStore @relation(fields: [store_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([store_id])
+  @@index([status])
+  @@map("shopify_webhooks")
+}
+
+model DeadLetterJob {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenant_id    String   @db.Uuid
+  job_type     String
+  payload_json Json
+  error        String?
+  attempts     Int      @default(0)
+  created_at   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+
+  @@index([tenant_id])
+  @@map("dead_letter_jobs")
 }

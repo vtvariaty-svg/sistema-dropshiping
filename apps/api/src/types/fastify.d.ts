@@ -8,5 +8,6 @@ declare module 'fastify' {
             role: string;
         };
         traceId: string;
+        rawBody?: Buffer;
     }
 }

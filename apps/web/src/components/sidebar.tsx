@@ -10,6 +10,7 @@ interface SidebarProps {
 
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { label: 'Integrations', href: '/dashboard/integrations/shopify', icon: '🔗' },
     { label: 'Orders', href: '#', icon: '📦', soon: true },
     { label: 'Products', href: '#', icon: '🏷️', soon: true },
     { label: 'Suppliers', href: '#', icon: '🏭', soon: true },

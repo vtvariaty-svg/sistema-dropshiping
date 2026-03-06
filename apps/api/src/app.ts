@@ -6,12 +6,12 @@ import traceIdPlugin from './plugins/trace-id';
 import requestLoggerPlugin from './plugins/request-logger';
 import { authRoutes } from './modules/auth/auth.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { shopifyRoutes } from './modules/shopify/shopify.routes';
+import { webhookRoutes, webhookRetryRoutes } from './modules/shopify/webhook.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
-    const app = Fastify({
-        logger: false, // We use our own structured logger
-    });
+    const app = Fastify({ logger: false });
 
     // --- Plugins ---
     await app.register(cors, {
@@ -21,21 +21,21 @@ export async function buildApp() {
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Trace-Id'],
     });
 
-    await app.register(cookie, {
-        secret: env.COOKIE_SECRET,
-    });
-
+    await app.register(cookie, { secret: env.COOKIE_SECRET });
     await app.register(traceIdPlugin);
     await app.register(requestLoggerPlugin);
 
     // --- Routes ---
     await app.register(authRoutes);
     await app.register(adminRoutes);
+    await app.register(shopifyRoutes);
+    await app.register(webhookRetryRoutes);
+
+    // Webhook receiver in its own encapsulated scope (custom JSON parser for raw body)
+    await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });
 
     // --- Health check ---
-    app.get('/health', async () => {
-        return { status: 'ok', timestamp: new Date().toISOString() };
-    });
+    app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
 
     // --- Global error handler ---
     app.setErrorHandler((error, request, reply) => {
@@ -47,7 +47,6 @@ export async function buildApp() {
             method: request.method,
             url: request.url,
         });
-
         const statusCode = error.statusCode ?? 500;
         reply.code(statusCode).send({
             error: statusCode >= 500 ? 'Internal server error' : error.message,
