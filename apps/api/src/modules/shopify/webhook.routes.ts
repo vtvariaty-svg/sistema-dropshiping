@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env';
 import { verifyWebhookHmac } from '../../lib/shopify';
@@ -8,21 +8,25 @@ import { storeWebhookAndEnqueue, retryWebhook } from './webhook.service';
 import { authenticate } from '../../middleware/authenticate';
 
 export async function webhookRoutes(fastify: FastifyInstance) {
-    // Override JSON parser to preserve raw body for HMAC
-    fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
-        (req as Record<string, unknown>).rawBody = body;
-        try {
-            done(null, JSON.parse(body.toString()));
-        } catch (err) {
-            done(err as Error);
-        }
-    });
+    // Override JSON parser to preserve raw body for HMAC validation
+    fastify.addContentTypeParser(
+        'application/json',
+        { parseAs: 'buffer' },
+        (_req: FastifyRequest, body: Buffer, done: (err: Error | null, result?: unknown) => void) => {
+            (_req as Record<string, unknown>).rawBody = body;
+            try {
+                done(null, JSON.parse(body.toString()));
+            } catch (err) {
+                done(err as Error);
+            }
+        },
+    );
 
     // POST /webhooks/shopify/:storeId — called by Shopify (no auth, uses HMAC)
-    fastify.post('/:storeId', async (request, reply) => {
+    fastify.post('/:storeId', async (request: FastifyRequest, reply: FastifyReply) => {
         const { storeId } = request.params as { storeId: string };
         const hmac = request.headers['x-shopify-hmac-sha256'] as string | undefined;
-        const topic = request.headers['x-shopify-topic'] as string || 'unknown';
+        const topic = (request.headers['x-shopify-topic'] as string) || 'unknown';
         const shopifyWebhookId = (request.headers['x-shopify-webhook-id'] as string) || uuidv4();
         const rawBody = request.rawBody;
 
@@ -40,7 +44,6 @@ export async function webhookRoutes(fastify: FastifyInstance) {
             return reply.code(404).send({ error: 'Store not found' });
         }
 
-        // Store and enqueue — respond immediately
         await storeWebhookAndEnqueue({
             tenantId: store.tenant_id,
             storeId: store.id,
@@ -55,15 +58,18 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 }
 
 export async function webhookRetryRoutes(fastify: FastifyInstance) {
-    // POST /shopify/webhooks/:id/retry (authenticated)
-    fastify.post('/shopify/webhooks/:id/retry', { preHandler: [authenticate] }, async (request, reply) => {
-        const { id } = request.params as { id: string };
-        const user = request.currentUser!;
-        try {
-            const result = await retryWebhook(id, user.tenantId, request.traceId);
-            return reply.send(result);
-        } catch (err) {
-            return reply.code(400).send({ error: err instanceof Error ? err.message : 'Retry failed' });
-        }
-    });
+    fastify.post(
+        '/shopify/webhooks/:id/retry',
+        { preHandler: [authenticate] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const { id } = request.params as { id: string };
+            const user = request.currentUser!;
+            try {
+                const result = await retryWebhook(id, user.tenantId, request.traceId);
+                return reply.send(result);
+            } catch (err) {
+                return reply.code(400).send({ error: err instanceof Error ? err.message : 'Retry failed' });
+            }
+        },
+    );
 }

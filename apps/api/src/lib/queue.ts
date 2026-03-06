@@ -1,38 +1,38 @@
-import { Queue } from 'bullmq';
-import IORedis from 'ioredis';
+import { Queue, QueueOptions } from 'bullmq';
 import { logger } from './logger';
 
-let connection: IORedis | null = null;
-
-export function getRedisConnection(): IORedis | null {
-    if (!process.env.REDIS_URL) {
+function getRedisOpts(): QueueOptions['connection'] | null {
+    const url = process.env.REDIS_URL;
+    if (!url) return null;
+    try {
+        const parsed = new URL(url);
+        return {
+            host: parsed.hostname,
+            port: Number(parsed.port) || 6379,
+            password: parsed.password || undefined,
+            username: parsed.username || undefined,
+            tls: parsed.protocol === 'rediss:' ? {} : undefined,
+            maxRetriesPerRequest: null,
+        };
+    } catch {
+        logger.error('Invalid REDIS_URL format');
         return null;
     }
-    if (!connection) {
-        connection = new IORedis(process.env.REDIS_URL, {
-            maxRetriesPerRequest: null,
-            enableReadyCheck: false,
-            lazyConnect: true,
-        });
-        connection.on('error', (err) => {
-            logger.error('Redis connection error', { error: err.message });
-        });
-        connection.connect().catch((err) => {
-            logger.error('Redis connect failed', { error: err.message });
-        });
-    }
-    return connection;
 }
 
 export const SHOPIFY_WEBHOOK_QUEUE = 'shopify-webhooks';
 
 let webhookQueue: Queue | null = null;
 
+export function getRedisConnectionOpts() {
+    return getRedisOpts();
+}
+
 export function getWebhookQueue(): Queue | null {
-    const conn = getRedisConnection();
-    if (!conn) return null;
+    const opts = getRedisOpts();
+    if (!opts) return null;
     if (!webhookQueue) {
-        webhookQueue = new Queue(SHOPIFY_WEBHOOK_QUEUE, { connection: conn });
+        webhookQueue = new Queue(SHOPIFY_WEBHOOK_QUEUE, { connection: opts });
     }
     return webhookQueue;
 }

@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { prisma } from '../lib/prisma';
-import { getRedisConnection, SHOPIFY_WEBHOOK_QUEUE } from '../lib/queue';
+import { getRedisConnectionOpts, SHOPIFY_WEBHOOK_QUEUE } from '../lib/queue';
 import { logger } from '../lib/logger';
 
 async function processShopifyWebhook(webhookRecordId: string) {
@@ -15,7 +15,6 @@ async function processShopifyWebhook(webhookRecordId: string) {
     }
 
     try {
-        // Process based on topic — placeholder logic for future modules
         const payload = webhook.payload_raw as Record<string, unknown>;
         switch (webhook.topic) {
             case 'orders/create':
@@ -39,7 +38,6 @@ async function processShopifyWebhook(webhookRecordId: string) {
             where: { id: webhookRecordId },
             data: { status: 'failed', error: errorMsg },
         });
-        // Move to dead letter
         await prisma.deadLetterJob.create({
             data: {
                 tenant_id: webhook.tenant_id,
@@ -50,13 +48,13 @@ async function processShopifyWebhook(webhookRecordId: string) {
             },
         });
         logger.error('Webhook processing failed, moved to dead letter', { webhookRecordId, error: errorMsg });
-        throw err; // Re-throw so BullMQ can retry
+        throw err;
     }
 }
 
 export function startWebhookWorker() {
-    const connection = getRedisConnection();
-    if (!connection) {
+    const connOpts = getRedisConnectionOpts();
+    if (!connOpts) {
         logger.warn('Redis not configured — webhook worker not started');
         return null;
     }
@@ -68,7 +66,7 @@ export function startWebhookWorker() {
             await processShopifyWebhook(webhookRecordId);
         },
         {
-            connection,
+            connection: connOpts,
             concurrency: 5,
             removeOnComplete: { count: 1000 },
             removeOnFail: { count: 5000 },
