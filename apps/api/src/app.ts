@@ -8,12 +8,12 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { shopifyRoutes } from './modules/shopify/shopify.routes';
 import { webhookRoutes, webhookRetryRoutes } from './modules/shopify/webhook.routes';
+import { orderRoutes } from './modules/orders/order.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
     const app = Fastify({ logger: false });
 
-    // --- Plugins ---
     await app.register(cors, {
         origin: [env.WEB_BASE_URL],
         credentials: true,
@@ -25,32 +25,27 @@ export async function buildApp() {
     await app.register(traceIdPlugin);
     await app.register(requestLoggerPlugin);
 
-    // --- Routes ---
+    // Routes
     await app.register(authRoutes);
     await app.register(adminRoutes);
     await app.register(shopifyRoutes);
     await app.register(webhookRetryRoutes);
+    await app.register(orderRoutes);
 
-    // Webhook receiver in its own encapsulated scope (custom JSON parser for raw body)
+    // Webhook receiver (encapsulated — custom JSON parser)
     await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });
 
-    // --- Health check ---
+    // Health check
     app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
 
-    // --- Global error handler ---
+    // Global error handler
     app.setErrorHandler((error, request, reply) => {
         logger.error('Unhandled error', {
-            traceId: request.traceId,
-            tenantId: request.currentUser?.tenantId,
-            error: error.message,
-            stack: error.stack,
-            method: request.method,
-            url: request.url,
+            traceId: request.traceId, tenantId: request.currentUser?.tenantId,
+            error: error.message, stack: error.stack, method: request.method, url: request.url,
         });
         const statusCode = error.statusCode ?? 500;
-        reply.code(statusCode).send({
-            error: statusCode >= 500 ? 'Internal server error' : error.message,
-        });
+        reply.code(statusCode).send({ error: statusCode >= 500 ? 'Internal server error' : error.message });
     });
 
     return app;

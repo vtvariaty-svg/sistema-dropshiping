@@ -71,3 +71,16 @@ export function verifyOAuthHmac(query: Record<string, string>, secret: string): 
 }
 
 export const WEBHOOK_TOPICS = ['orders/create', 'orders/updated'] as const;
+
+export async function fetchShopifyOrder(shop: string, accessToken: string, orderId: string): Promise<Record<string, unknown>> {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/orders/${orderId}.json`, {
+        headers: { 'X-Shopify-Access-Token': accessToken },
+    });
+    if (!res.ok) {
+        const body = await res.text();
+        logger.error('Shopify order fetch failed', { shop, orderId, status: res.status, body });
+        throw new Error(`Shopify order fetch failed: ${res.status}`);
+    }
+    const data = await res.json() as { order: Record<string, unknown> };
+    return data.order;
+}

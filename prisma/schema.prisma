@@ -18,6 +18,10 @@ model Tenant {
   shopify_stores   ShopifyStore[]
   shopify_webhooks ShopifyWebhook[]
   dead_letter_jobs DeadLetterJob[]
+  orders           Order[]
+  order_items      OrderItem[]
+  order_addresses  OrderAddress[]
+  order_events     OrderEvent[]
 
   @@map("tenants")
 }
@@ -83,6 +87,7 @@ model ShopifyStore {
 
   tenant   Tenant           @relation(fields: [tenant_id], references: [id])
   webhooks ShopifyWebhook[]
+  orders   Order[]
 
   @@unique([tenant_id, shop_domain])
   @@index([tenant_id])
@@ -123,4 +128,91 @@ model DeadLetterJob {
 
   @@index([tenant_id])
   @@map("dead_letter_jobs")
+}
+
+// ─── MODULE 2: Order Pipeline ────────────────────────────────────
+
+model Order {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenant_id             String    @db.Uuid
+  channel               String    @default("SHOPIFY")
+  store_id              String?   @db.Uuid
+  external_order_id     String
+  external_order_number String
+  financial_status      String
+  fulfillment_status    String?
+  currency              String
+  subtotal              Decimal   @db.Decimal(12, 2)
+  shipping              Decimal   @db.Decimal(12, 2)
+  discounts             Decimal   @db.Decimal(12, 2)
+  total                 Decimal   @db.Decimal(12, 2)
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  tenant    Tenant        @relation(fields: [tenant_id], references: [id])
+  store     ShopifyStore? @relation(fields: [store_id], references: [id])
+  items     OrderItem[]
+  addresses OrderAddress[]
+  events    OrderEvent[]
+
+  @@unique([tenant_id, channel, store_id, external_order_id])
+  @@index([tenant_id])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                    String  @id @default(uuid()) @db.Uuid
+  tenant_id             String  @db.Uuid
+  order_id              String  @db.Uuid
+  external_line_item_id String
+  sku                   String?
+  variant_id            String?
+  title                 String
+  qty                   Int
+  price                 Decimal @db.Decimal(12, 2)
+  discount              Decimal @db.Decimal(12, 2) @default(0)
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  order  Order  @relation(fields: [order_id], references: [id])
+
+  @@index([order_id])
+  @@map("order_items")
+}
+
+model OrderAddress {
+  id        String  @id @default(uuid()) @db.Uuid
+  tenant_id String  @db.Uuid
+  order_id  String  @db.Uuid
+  type      String
+  name      String?
+  phone     String?
+  address1  String?
+  address2  String?
+  city      String?
+  province  String?
+  zip       String?
+  country   String?
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  order  Order  @relation(fields: [order_id], references: [id])
+
+  @@index([order_id])
+  @@map("order_addresses")
+}
+
+model OrderEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenant_id    String   @db.Uuid
+  order_id     String?  @db.Uuid
+  channel      String
+  type         String
+  payload_json Json?
+  created_at   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  order  Order? @relation(fields: [order_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([order_id])
+  @@map("order_events")
 }

@@ -21,8 +21,10 @@ function getRedisOpts(): QueueOptions['connection'] | null {
 }
 
 export const SHOPIFY_WEBHOOK_QUEUE = 'shopify-webhooks';
+export const ORDER_IMPORT_QUEUE = 'order-import';
 
 let webhookQueue: Queue | null = null;
+let importQueue: Queue | null = null;
 
 export function getRedisConnectionOpts() {
     return getRedisOpts();
@@ -35,4 +37,13 @@ export function getWebhookQueue(): Queue | null {
         webhookQueue = new Queue(SHOPIFY_WEBHOOK_QUEUE, { connection: opts });
     }
     return webhookQueue;
+}
+
+export function getImportQueue(): Queue | null {
+    const opts = getRedisOpts();
+    if (!opts) return null;
+    if (!importQueue) {
+        importQueue = new Queue(ORDER_IMPORT_QUEUE, { connection: opts });
+    }
+    return importQueue;
 }
