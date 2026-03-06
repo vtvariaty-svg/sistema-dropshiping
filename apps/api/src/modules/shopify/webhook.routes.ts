@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { IncomingMessage } from 'http';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env';
 import { verifyWebhookHmac } from '../../lib/shopify';
@@ -8,28 +7,29 @@ import { getStoreByIdUnsafe } from './shopify.service';
 import { storeWebhookAndEnqueue, retryWebhook } from './webhook.service';
 import { authenticate } from '../../middleware/authenticate';
 
+// Store raw bodies keyed by request for HMAC validation
+const rawBodies = new WeakMap<FastifyRequest, Buffer>();
+
 export async function webhookRoutes(fastify: FastifyInstance) {
-    // Override JSON parser to preserve raw body for HMAC validation
     fastify.addContentTypeParser(
         'application/json',
         { parseAs: 'buffer' },
-        function (req: IncomingMessage, body: Buffer, done: (err: Error | null, result?: unknown) => void) {
-            (req as IncomingMessage & { rawBody?: Buffer }).rawBody = body;
+        function (req, body, done) {
+            rawBodies.set(req, body as Buffer);
             try {
-                done(null, JSON.parse(body.toString()));
+                done(null, JSON.parse((body as Buffer).toString()));
             } catch (err) {
                 done(err as Error);
             }
         },
     );
 
-    // POST /webhooks/shopify/:storeId — called by Shopify (no auth, uses HMAC)
     fastify.post('/:storeId', async (request: FastifyRequest, reply: FastifyReply) => {
         const { storeId } = request.params as { storeId: string };
         const hmac = request.headers['x-shopify-hmac-sha256'] as string | undefined;
         const topic = (request.headers['x-shopify-topic'] as string) || 'unknown';
         const shopifyWebhookId = (request.headers['x-shopify-webhook-id'] as string) || uuidv4();
-        const rawBody = (request.raw as IncomingMessage & { rawBody?: Buffer }).rawBody;
+        const rawBody = rawBodies.get(request);
 
         if (!hmac || !rawBody) {
             return reply.code(401).send({ error: 'Missing HMAC' });
