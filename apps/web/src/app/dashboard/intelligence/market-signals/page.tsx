@@ -35,8 +35,8 @@ export default function MarketSignalsPage() {
             const body: Record<string, string> = { cluster_id: form.cluster_id, source: form.source };
             if (form.query) body.query = form.query;
             await apiFetch('/market-signals/collect', { method: 'POST', body: JSON.stringify(body) });
-            setMessage('✅ Collection complete!'); load();
-        } catch (e) { setMessage(`Failed: ${e}`); } finally { setCollecting(false); }
+            setMessage('✅ Coleta concluída!'); load();
+        } catch (e) { setMessage(`Falha: ${e}`); } finally { setCollecting(false); }
     };
 
     const statusColor = (s: string) => {
@@ -49,38 +49,38 @@ export default function MarketSignalsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Market Signals</h1>
-                <p className="text-white/40 mt-1">Collect external market data from Shopee and TikTok</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Sinais de Mercado</h1>
+                <p className="text-white/40 mt-1">Colete dados de mercado externo da Shopee e TikTok</p>
             </div>
 
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Collect Signals</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Coletar Sinais</h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <select className="input-field" value={form.cluster_id} onChange={(e) => setForm({ ...form, cluster_id: e.target.value })}>
-                        <option value="">Select Cluster</option>
+                        <option value="">Selecione o Cluster</option>
                         {clusters.map((c) => <option key={c.id} value={c.id}>{c.name_norm}</option>)}
                     </select>
                     <select className="input-field" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}>
                         <option value="SHOPEE">Shopee</option>
                         <option value="TIKTOK">TikTok</option>
                     </select>
-                    <input className="input-field" placeholder="Custom query (optional)" value={form.query} onChange={(e) => setForm({ ...form, query: e.target.value })} />
-                    <button onClick={collect} disabled={collecting || !form.cluster_id} className="btn-primary text-sm">{collecting ? 'Collecting...' : '📡 Collect'}</button>
+                    <input className="input-field" placeholder="Busca personalizada (opcional)" value={form.query} onChange={(e) => setForm({ ...form, query: e.target.value })} />
+                    <button onClick={collect} disabled={collecting || !form.cluster_id} className="btn-primary text-sm">{collecting ? 'Coletando...' : '📡 Coletar'}</button>
                 </div>
                 {message && <p className={`text-sm mt-2 ${message.startsWith('✅') ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>}
             </div>
 
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Recent Jobs</h2>
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : jobs.length === 0 ? <p className="text-white/30 text-sm">No collection jobs yet.</p> : (
+                <h2 className="text-lg font-semibold text-white mb-4">Trabalhos Recentes</h2>
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : jobs.length === 0 ? <p className="text-white/30 text-sm">Nenhum trabalho de coleta ainda.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Source</th>
+                                <th className="text-left py-3 px-2 text-white/40">Fonte</th>
                                 <th className="text-left py-3 px-2 text-white/40">Cluster</th>
-                                <th className="text-left py-3 px-2 text-white/40">Query</th>
+                                <th className="text-left py-3 px-2 text-white/40">Busca</th>
                                 <th className="text-center py-3 px-2 text-white/40">Status</th>
-                                <th className="text-left py-3 px-2 text-white/40">Created</th>
+                                <th className="text-left py-3 px-2 text-white/40">Criado Em</th>
                             </tr></thead>
                             <tbody>{jobs.map((j) => (
                                 <tr key={j.id} className="border-b border-white/5 hover:bg-white/[0.02]">
@@ -94,7 +94,7 @@ export default function MarketSignalsPage() {
                         </table>
                     </div>
                 )}
-                <div className="mt-3 text-right"><a href="/dashboard/intelligence/market-signals/jobs" className="text-xs text-brand-400 hover:text-brand-300">View All Jobs →</a></div>
+                <div className="mt-3 text-right"><a href="/dashboard/intelligence/market-signals/jobs" className="text-xs text-brand-400 hover:text-brand-300">Ver Todos os Trabalhos →</a></div>
             </div>
         </div>
     );

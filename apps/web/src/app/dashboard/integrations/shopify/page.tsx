@@ -48,9 +48,9 @@ export default function ShopifyIntegrationPage() {
         setMessage('');
         try {
             await apiFetch(`/shopify/stores/${storeId}/register-webhooks`, { method: 'POST' });
-            setMessage('Webhooks registered successfully!');
+            setMessage('Webhooks registrados com sucesso!');
         } catch (err) {
-            setMessage('Failed to register webhooks');
+            setMessage('Falha ao registrar webhooks');
         } finally {
             setRegistering(null);
         }
@@ -59,23 +59,23 @@ export default function ShopifyIntegrationPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Shopify Integration</h1>
-                <p className="text-white/40 mt-1">Connect your Shopify stores and manage webhooks</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Integração Shopify</h1>
+                <p className="text-white/40 mt-1">Conecte suas lojas Shopify e gerencie webhooks</p>
             </div>
 
             {/* Connect Store */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Connect a Shopify Store</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Conectar uma Loja Shopify</h2>
                 <div className="flex flex-col sm:flex-row gap-3">
                     <input
                         type="text"
                         value={shopDomain}
                         onChange={(e) => setShopDomain(e.target.value)}
-                        placeholder="mystore.myshopify.com"
+                        placeholder="minhaloja.myshopify.com"
                         className="input-field flex-1"
                     />
                     <button onClick={handleConnect} className="btn-primary whitespace-nowrap">
-                        Connect Store
+                        Conectar Loja
                     </button>
                 </div>
             </div>
@@ -89,25 +89,25 @@ export default function ShopifyIntegrationPage() {
             {/* Stores List */}
             <div className="card">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-white">Connected Stores</h2>
+                    <h2 className="text-lg font-semibold text-white">Lojas Conectadas</h2>
                     <a href="/dashboard/integrations/shopify/inbox" className="text-sm text-brand-400 hover:text-brand-300 transition-colors">
-                        View Webhook Inbox →
+                        Ver Caixa de Entrada de Webhooks →
                     </a>
                 </div>
 
                 {loading ? (
-                    <p className="text-white/30 text-sm">Loading...</p>
+                    <p className="text-white/30 text-sm">Carregando...</p>
                 ) : stores.length === 0 ? (
-                    <p className="text-white/30 text-sm">No stores connected yet.</p>
+                    <p className="text-white/30 text-sm">Nenhuma loja conectada ainda.</p>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-white/10">
-                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Store</th>
+                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Loja</th>
                                     <th className="text-left py-3 px-2 text-white/40 font-medium">Status</th>
-                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Connected</th>
-                                    <th className="text-right py-3 px-2 text-white/40 font-medium">Actions</th>
+                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Conectada</th>
+                                    <th className="text-right py-3 px-2 text-white/40 font-medium">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -129,7 +129,7 @@ export default function ShopifyIntegrationPage() {
                                                 disabled={registering === store.id}
                                                 className="text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50 transition-colors"
                                             >
-                                                {registering === store.id ? 'Registering...' : 'Register Webhooks'}
+                                                {registering === store.id ? 'Registrando...' : 'Registrar Webhooks'}
                                             </button>
                                         </td>
                                     </tr>

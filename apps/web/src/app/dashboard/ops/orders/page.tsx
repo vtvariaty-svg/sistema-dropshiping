@@ -48,33 +48,33 @@ export default function OrdersPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Orders</h1>
-                <p className="text-white/40 mt-1">Internal order pipeline — imported from connected stores</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Pedidos</h1>
+                <p className="text-white/40 mt-1">Pipeline de pedidos internos — importados das lojas conectadas</p>
             </div>
             <div className="flex flex-wrap gap-3">
                 <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input-field w-auto text-sm">
-                    <option value="">All Payment</option>
-                    <option value="paid">Paid</option><option value="pending">Pending</option>
-                    <option value="refunded">Refunded</option>
+                    <option value="">Todos (Pagamento)</option>
+                    <option value="paid">Pago</option><option value="pending">Pendente</option>
+                    <option value="refunded">Reembolsado</option>
                 </select>
                 <select value={opStatus} onChange={(e) => { setOpStatus(e.target.value); setPage(1); }} className="input-field w-auto text-sm">
-                    <option value="">All Pipeline</option>
-                    <option value="NEW">New</option><option value="NEEDS_MAPPING">Needs Mapping</option>
-                    <option value="READY_FOR_PO">Ready for PO</option>
+                    <option value="">Todos (Pipeline)</option>
+                    <option value="NEW">Novo</option><option value="NEEDS_MAPPING">Precisa de Mapeamento</option>
+                    <option value="READY_FOR_PO">Pronto pra OC</option>
                 </select>
-                <span className="text-white/30 text-sm self-center">{total} orders</span>
+                <span className="text-white/30 text-sm self-center">{total} pedidos</span>
             </div>
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : orders.length === 0 ? <p className="text-white/30 text-sm">No orders found.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : orders.length === 0 ? <p className="text-white/30 text-sm">Nenhum pedido encontrado.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40 font-medium">Order #</th>
-                                <th className="text-left py-3 px-2 text-white/40 font-medium">Payment</th>
+                                <th className="text-left py-3 px-2 text-white/40 font-medium">Pedido #</th>
+                                <th className="text-left py-3 px-2 text-white/40 font-medium">Pagamento</th>
                                 <th className="text-left py-3 px-2 text-white/40 font-medium">Pipeline</th>
-                                <th className="text-left py-3 px-2 text-white/40 font-medium">Fulfillment</th>
+                                <th className="text-left py-3 px-2 text-white/40 font-medium">Atendimento</th>
                                 <th className="text-right py-3 px-2 text-white/40 font-medium">Total</th>
-                                <th className="text-left py-3 px-2 text-white/40 font-medium">Date</th>
+                                <th className="text-left py-3 px-2 text-white/40 font-medium">Data</th>
                                 <th className="text-right py-3 px-2 text-white/40 font-medium"></th>
                             </tr></thead>
                             <tbody>{orders.map((o) => (
@@ -85,7 +85,7 @@ export default function OrdersPage() {
                                     <td className="py-3 px-2 text-white/50 text-xs">{o.fulfillment_status ?? 'unfulfilled'}</td>
                                     <td className="py-3 px-2 text-right text-white font-mono text-xs">{o.currency} {Number(o.total).toFixed(2)}</td>
                                     <td className="py-3 px-2 text-white/50 text-xs">{new Date(o.created_at).toLocaleDateString()}</td>
-                                    <td className="py-3 px-2 text-right"><a href={`/dashboard/ops/orders/${o.id}`} className="text-xs text-brand-400 hover:text-brand-300">View</a></td>
+                                    <td className="py-3 px-2 text-right"><a href={`/dashboard/ops/orders/${o.id}`} className="text-xs text-brand-400 hover:text-brand-300">Ver</a></td>
                                 </tr>
                             ))}</tbody>
                         </table>
@@ -93,9 +93,9 @@ export default function OrdersPage() {
                 )}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Previous</button>
-                        <span className="text-xs text-white/30">Page {page} of {totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Next →</button>
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Anterior</button>
+                        <span className="text-xs text-white/30">Página {page} de {totalPages}</span>
+                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Próximo →</button>
                     </div>
                 )}
             </div>

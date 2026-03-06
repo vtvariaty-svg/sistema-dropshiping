@@ -38,35 +38,35 @@ export default function FeesPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Fee Profiles</h1>
-                <p className="text-white/40 mt-1">Configure channel and payment fees for profit calculation</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Perfis de Taxas</h1>
+                <p className="text-white/40 mt-1">Configure taxas de canal e pagamento para cálculo de lucro</p>
             </div>
 
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">{editId ? 'Edit Profile' : 'New Profile'}</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">{editId ? 'Editar Perfil' : 'Novo Perfil'}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                     <select className="input-field" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
                         <option value="SHOPIFY">Shopify</option>
                         <option value="MANUAL">Manual</option>
                     </select>
-                    <input className="input-field" placeholder="Channel Fee %" type="number" step="0.01" value={form.fee_percent} onChange={(e) => setForm({ ...form, fee_percent: e.target.value })} />
-                    <input className="input-field" placeholder="Payment Fee %" type="number" step="0.01" value={form.payment_fee_percent} onChange={(e) => setForm({ ...form, payment_fee_percent: e.target.value })} />
-                    <input className="input-field" placeholder="Fixed Fee" type="number" step="0.01" value={form.fixed_fee} onChange={(e) => setForm({ ...form, fixed_fee: e.target.value })} />
-                    <button onClick={handleSubmit} className="btn-primary text-sm">{editId ? 'Update' : 'Create'}</button>
+                    <input className="input-field" placeholder="Taxa do Canal %" type="number" step="0.01" value={form.fee_percent} onChange={(e) => setForm({ ...form, fee_percent: e.target.value })} />
+                    <input className="input-field" placeholder="Taxa de Pagamento %" type="number" step="0.01" value={form.payment_fee_percent} onChange={(e) => setForm({ ...form, payment_fee_percent: e.target.value })} />
+                    <input className="input-field" placeholder="Taxa Fixa" type="number" step="0.01" value={form.fixed_fee} onChange={(e) => setForm({ ...form, fixed_fee: e.target.value })} />
+                    <button onClick={handleSubmit} className="btn-primary text-sm">{editId ? 'Atualizar' : 'Criar'}</button>
                 </div>
                 {message && <p className="text-red-400 text-sm mt-2">{message}</p>}
             </div>
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : profiles.length === 0 ? <p className="text-white/30 text-sm">No fee profiles.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : profiles.length === 0 ? <p className="text-white/30 text-sm">Sem perfis de taxas.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Channel</th>
-                                <th className="text-right py-3 px-2 text-white/40">Channel Fee %</th>
-                                <th className="text-right py-3 px-2 text-white/40">Payment Fee %</th>
-                                <th className="text-right py-3 px-2 text-white/40">Fixed Fee</th>
-                                <th className="text-center py-3 px-2 text-white/40">Active</th>
+                                <th className="text-left py-3 px-2 text-white/40">Canal</th>
+                                <th className="text-right py-3 px-2 text-white/40">Taxa do Canal %</th>
+                                <th className="text-right py-3 px-2 text-white/40">Taxa de Pagamento %</th>
+                                <th className="text-right py-3 px-2 text-white/40">Taxa Fixa</th>
+                                <th className="text-center py-3 px-2 text-white/40">Ativo</th>
                                 <th className="text-right py-3 px-2 text-white/40"></th>
                             </tr></thead>
                             <tbody>{profiles.map((p) => (
@@ -77,8 +77,8 @@ export default function FeesPage() {
                                     <td className="py-3 px-2 text-right text-white font-mono">{Number(p.fixed_fee).toFixed(2)}</td>
                                     <td className="py-3 px-2 text-center">{p.active ? <span className="text-emerald-400">●</span> : <span className="text-white/20">○</span>}</td>
                                     <td className="py-3 px-2 text-right space-x-2">
-                                        <button onClick={() => startEdit(p)} className="text-xs text-brand-400 hover:text-brand-300">Edit</button>
-                                        <button onClick={() => handleDelete(p.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                                        <button onClick={() => startEdit(p)} className="text-xs text-brand-400 hover:text-brand-300">Editar</button>
+                                        <button onClick={() => handleDelete(p.id)} className="text-xs text-red-400 hover:text-red-300">Excluir</button>
                                     </td>
                                 </tr>
                             ))}</tbody>

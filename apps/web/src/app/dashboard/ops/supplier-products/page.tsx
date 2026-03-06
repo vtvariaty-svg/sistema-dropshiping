@@ -34,57 +34,57 @@ export default function SupplierProductsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Delete this product?')) return;
+        if (!confirm('Excluir este produto?')) return;
         try { await apiFetch(`/supplier-products/${id}`, { method: 'DELETE' }); load(); } catch { }
     };
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <div><h1 className="text-2xl lg:text-3xl font-bold text-white">Supplier Products</h1>
-                    <p className="text-white/40 mt-1">Products available from your suppliers</p></div>
-                <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary text-sm">+ Add Product</button>
+                <div><h1 className="text-2xl lg:text-3xl font-bold text-white">Produtos do Fornecedor</h1>
+                    <p className="text-white/40 mt-1">Produtos disponíveis nos seus fornecedores</p></div>
+                <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary text-sm">+ Adicionar Produto</button>
             </div>
 
             <div className="flex gap-3">
                 <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input-field w-auto text-sm">
-                    <option value="">All Suppliers</option>
+                    <option value="">Todos os Fornecedores</option>
                     {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
             </div>
 
             {showForm && (
                 <div className="card space-y-4">
-                    <h2 className="text-lg font-semibold text-white">{editId ? 'Edit' : 'New'} Product</h2>
+                    <h2 className="text-lg font-semibold text-white">{editId ? 'Editar' : 'Novo'} Produto</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <select className="input-field" value={form.supplier_id} onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}>
-                            <option value="">Select Supplier *</option>
+                            <option value="">Selecione o Fornecedor *</option>
                             {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                         </select>
-                        <input className="input-field" placeholder="Supplier SKU *" value={form.supplier_sku} onChange={(e) => setForm({ ...form, supplier_sku: e.target.value })} />
-                        <input className="input-field" placeholder="Product Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                        <input className="input-field" type="number" step="0.01" placeholder="Cost *" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} />
-                        <input className="input-field" placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} />
-                        <input className="input-field" placeholder="Source URL" value={form.source_url} onChange={(e) => setForm({ ...form, source_url: e.target.value })} />
+                        <input className="input-field" placeholder="SKU do Fornecedor *" value={form.supplier_sku} onChange={(e) => setForm({ ...form, supplier_sku: e.target.value })} />
+                        <input className="input-field" placeholder="Nome do Produto *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                        <input className="input-field" type="number" step="0.01" placeholder="Custo *" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} />
+                        <input className="input-field" placeholder="Moeda" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} />
+                        <input className="input-field" placeholder="URL de Origem" value={form.source_url} onChange={(e) => setForm({ ...form, source_url: e.target.value })} />
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={handleSave} className="btn-primary text-sm">{editId ? 'Update' : 'Create'}</button>
-                        <button onClick={resetForm} className="text-sm text-white/40 hover:text-white/60">Cancel</button>
+                        <button onClick={handleSave} className="btn-primary text-sm">{editId ? 'Atualizar' : 'Criar'}</button>
+                        <button onClick={resetForm} className="text-sm text-white/40 hover:text-white/60">Cancelar</button>
                     </div>
                 </div>
             )}
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : products.length === 0 ? <p className="text-white/30 text-sm">No products.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : products.length === 0 ? <p className="text-white/30 text-sm">Nenhum produto.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Supplier</th>
+                                <th className="text-left py-3 px-2 text-white/40">Fornecedor</th>
                                 <th className="text-left py-3 px-2 text-white/40">SKU</th>
-                                <th className="text-left py-3 px-2 text-white/40">Name</th>
-                                <th className="text-right py-3 px-2 text-white/40">Cost</th>
+                                <th className="text-left py-3 px-2 text-white/40">Nome</th>
+                                <th className="text-right py-3 px-2 text-white/40">Custo</th>
                                 <th className="text-left py-3 px-2 text-white/40">Status</th>
-                                <th className="text-right py-3 px-2 text-white/40">Actions</th>
+                                <th className="text-right py-3 px-2 text-white/40">Ações</th>
                             </tr></thead>
                             <tbody>{products.map((p) => (
                                 <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02]">
@@ -93,10 +93,10 @@ export default function SupplierProductsPage() {
                                     <td className="py-3 px-2 text-white text-xs">{p.name}</td>
                                     <td className="py-3 px-2 text-right text-white font-mono text-xs">{p.currency} {Number(p.cost).toFixed(2)}</td>
                                     <td className="py-3 px-2">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs ${p.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>{p.active ? 'Active' : 'Inactive'}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-xs ${p.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>{p.active ? 'Ativo' : 'Inativo'}</span>
                                     </td>
                                     <td className="py-3 px-2 text-right">
-                                        <button onClick={() => handleDelete(p.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                                        <button onClick={() => handleDelete(p.id)} className="text-xs text-red-400 hover:text-red-300">Excluir</button>
                                     </td>
                                 </tr>
                             ))}</tbody>

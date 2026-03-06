@@ -40,31 +40,31 @@ export default function PurchaseOrdersPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Purchase Orders</h1>
-                <p className="text-white/40 mt-1">Supplier purchase orders generated from mapped orders</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Ordens de Compra</h1>
+                <p className="text-white/40 mt-1">Ordens de compra do fornecedor geradas a partir de pedidos mapeados</p>
             </div>
             <div className="flex flex-wrap gap-3">
                 <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input-field w-auto text-sm">
-                    <option value="">All Statuses</option>
-                    <option value="CREATED">Created</option>
-                    <option value="READY_TO_DISPATCH">Ready to Dispatch</option>
-                    <option value="DISPATCHED">Dispatched</option>
-                    <option value="CANCELLED">Cancelled</option>
+                    <option value="">Todos os Status</option>
+                    <option value="CREATED">Criada</option>
+                    <option value="READY_TO_DISPATCH">Pronta para Envio</option>
+                    <option value="DISPATCHED">Enviada</option>
+                    <option value="CANCELLED">Cancelada</option>
                 </select>
-                <span className="text-white/30 text-sm self-center">{total} POs</span>
+                <span className="text-white/30 text-sm self-center">{total} OCs</span>
             </div>
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : pos.length === 0 ? <p className="text-white/30 text-sm">No purchase orders.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : pos.length === 0 ? <p className="text-white/30 text-sm">Nenhuma ordem de compra.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">PO ID</th>
-                                <th className="text-left py-3 px-2 text-white/40">Order</th>
-                                <th className="text-left py-3 px-2 text-white/40">Supplier</th>
+                                <th className="text-left py-3 px-2 text-white/40">ID OC</th>
+                                <th className="text-left py-3 px-2 text-white/40">Pedido</th>
+                                <th className="text-left py-3 px-2 text-white/40">Fornecedor</th>
                                 <th className="text-left py-3 px-2 text-white/40">Status</th>
                                 <th className="text-right py-3 px-2 text-white/40">Total</th>
-                                <th className="text-left py-3 px-2 text-white/40">Created</th>
-                                <th className="text-left py-3 px-2 text-white/40">Sent</th>
+                                <th className="text-left py-3 px-2 text-white/40">Criada</th>
+                                <th className="text-left py-3 px-2 text-white/40">Enviada</th>
                                 <th className="text-right py-3 px-2 text-white/40"></th>
                             </tr></thead>
                             <tbody>{pos.map((po) => (
@@ -76,7 +76,7 @@ export default function PurchaseOrdersPage() {
                                     <td className="py-3 px-2 text-right text-white font-mono text-xs">{po.currency} {Number(po.total_cost).toFixed(2)}</td>
                                     <td className="py-3 px-2 text-white/50 text-xs">{new Date(po.created_at).toLocaleDateString()}</td>
                                     <td className="py-3 px-2 text-white/50 text-xs">{po.sent_at ? new Date(po.sent_at).toLocaleDateString() : '—'}</td>
-                                    <td className="py-3 px-2 text-right"><a href={`/dashboard/ops/purchase-orders/${po.id}`} className="text-xs text-brand-400 hover:text-brand-300">View</a></td>
+                                    <td className="py-3 px-2 text-right"><a href={`/dashboard/ops/purchase-orders/${po.id}`} className="text-xs text-brand-400 hover:text-brand-300">Ver</a></td>
                                 </tr>
                             ))}</tbody>
                         </table>
@@ -84,9 +84,9 @@ export default function PurchaseOrdersPage() {
                 )}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Previous</button>
-                        <span className="text-xs text-white/30">Page {page} of {totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Next →</button>
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Anterior</button>
+                        <span className="text-xs text-white/30">Página {page} de {totalPages}</span>
+                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Próximo →</button>
                     </div>
                 )}
             </div>

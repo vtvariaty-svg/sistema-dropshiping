@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-pulse text-white/40 text-lg">Loading...</div>
+                <div className="animate-pulse text-white/40 text-lg">Carregando...</div>
             </div>
         );
     }

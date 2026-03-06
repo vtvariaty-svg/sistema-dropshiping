@@ -38,7 +38,7 @@ export default function LoginPage() {
             if (err instanceof ApiError) {
                 setError(err.message);
             } else {
-                setError('An unexpected error occurred');
+                setError('Ocorreu um erro inesperado');
             }
         } finally {
             setLoading(false);
@@ -62,15 +62,15 @@ export default function LoginPage() {
                             Dropship<span className="text-brand-400">SaaS</span>
                         </h1>
                         <p className="text-lg text-white/60 max-w-md">
-                            Automate your dropshipping operations. Manage orders, track suppliers, and scale your business with intelligence.
+                            Automatize suas operações de dropshipping. Gerencie pedidos, acompanhe fornecedores e escale seu negócio com inteligência.
                         </p>
                     </div>
 
                     <div className="space-y-4 mt-12">
                         {[
-                            { icon: '📦', text: 'Automated order processing' },
-                            { icon: '🔗', text: 'Multi-store Shopify integration' },
-                            { icon: '📊', text: 'Product intelligence & analytics' },
+                            { icon: '📦', text: 'Processamento automatizado de pedidos' },
+                            { icon: '🔗', text: 'Integração multi-loja Shopify' },
+                            { icon: '📊', text: 'Inteligência de produto e análises' },
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3 text-white/70">
                                 <span className="text-xl">{item.icon}</span>
@@ -91,8 +91,8 @@ export default function LoginPage() {
                     </div>
 
                     <div className="card">
-                        <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
-                        <p className="text-white/40 mb-8">Sign in to your account to continue</p>
+                        <h2 className="text-2xl font-bold text-white mb-2">Bem-vindo de volta</h2>
+                        <p className="text-white/40 mb-8">Entre na sua conta para continuar</p>
 
                         {error && (
                             <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
@@ -103,7 +103,7 @@ export default function LoginPage() {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
-                                    Email address
+                                    E-mail
                                 </label>
                                 <input
                                     id="email"
@@ -111,7 +111,7 @@ export default function LoginPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="input-field"
-                                    placeholder="you@company.com"
+                                    placeholder="seu@email.com"
                                     required
                                     autoComplete="email"
                                 />
@@ -119,7 +119,7 @@ export default function LoginPage() {
 
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-2">
-                                    Password
+                                    Senha
                                 </label>
                                 <input
                                     id="password"
@@ -144,10 +144,10 @@ export default function LoginPage() {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                         </svg>
-                                        Signing in...
+                                        Entrando...
                                     </span>
                                 ) : (
-                                    'Sign in'
+                                    'Entrar'
                                 )}
                             </button>
                         </form>

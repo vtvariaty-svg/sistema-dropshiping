@@ -42,39 +42,39 @@ export default function JobsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <a href="/dashboard/intelligence/market-signals" className="text-xs text-brand-400 hover:text-brand-300">← Back to Market Signals</a>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white mt-1">Collection Jobs</h1>
-                <p className="text-white/40 mt-1">History of all market signal collection jobs</p>
+                <a href="/dashboard/intelligence/market-signals" className="text-xs text-brand-400 hover:text-brand-300">← Voltar para Sinais de Mercado</a>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white mt-1">Trabalhos de Coleta</h1>
+                <p className="text-white/40 mt-1">Histórico de todos os trabalhos de coleta de sinais de mercado</p>
             </div>
 
             <div className="flex gap-3">
                 <select className="input-field w-auto" value={filter.source} onChange={(e) => { setFilter({ ...filter, source: e.target.value }); setPage(1); }}>
-                    <option value="">All Sources</option>
+                    <option value="">Todas as Fontes</option>
                     <option value="SHOPEE">Shopee</option>
                     <option value="TIKTOK">TikTok</option>
                 </select>
                 <select className="input-field w-auto" value={filter.status} onChange={(e) => { setFilter({ ...filter, status: e.target.value }); setPage(1); }}>
-                    <option value="">All Status</option>
-                    <option value="QUEUED">Queued</option>
-                    <option value="RUNNING">Running</option>
-                    <option value="SUCCESS">Success</option>
-                    <option value="FAILED">Failed</option>
+                    <option value="">Todos os Status</option>
+                    <option value="QUEUED">Na Fila</option>
+                    <option value="RUNNING">Rodando</option>
+                    <option value="SUCCESS">Sucesso</option>
+                    <option value="FAILED">Falha</option>
                 </select>
             </div>
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : jobs.length === 0 ? <p className="text-white/30 text-sm">No jobs found.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : jobs.length === 0 ? <p className="text-white/30 text-sm">Nenhum trabalho encontrado.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Source</th>
+                                <th className="text-left py-3 px-2 text-white/40">Fonte</th>
                                 <th className="text-left py-3 px-2 text-white/40">Cluster</th>
-                                <th className="text-left py-3 px-2 text-white/40">Query</th>
+                                <th className="text-left py-3 px-2 text-white/40">Busca</th>
                                 <th className="text-center py-3 px-2 text-white/40">Status</th>
-                                <th className="text-right py-3 px-2 text-white/40">Attempts</th>
-                                <th className="text-left py-3 px-2 text-white/40">Created</th>
-                                <th className="text-left py-3 px-2 text-white/40">Finished</th>
-                                <th className="text-left py-3 px-2 text-white/40">Error</th>
+                                <th className="text-right py-3 px-2 text-white/40">Tentativas</th>
+                                <th className="text-left py-3 px-2 text-white/40">Criado Em</th>
+                                <th className="text-left py-3 px-2 text-white/40">Finalizado Em</th>
+                                <th className="text-left py-3 px-2 text-white/40">Erro</th>
                             </tr></thead>
                             <tbody>{jobs.map((j) => (
                                 <tr key={j.id} className="border-b border-white/5 hover:bg-white/[0.02]">
@@ -93,9 +93,9 @@ export default function JobsPage() {
                 )}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Previous</button>
-                        <span className="text-xs text-white/30">Page {page} of {totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Next →</button>
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Anterior</button>
+                        <span className="text-xs text-white/30">Página {page} de {totalPages}</span>
+                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Próxima →</button>
                     </div>
                 )}
             </div>

@@ -18,7 +18,7 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-pulse text-white/40 text-lg">Loading...</div>
+            <div className="animate-pulse text-white/40 text-lg">Carregando...</div>
         </div>
     );
 }

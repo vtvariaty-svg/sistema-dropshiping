@@ -37,40 +37,40 @@ export default function ProfitAnalyticsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Profit Analytics</h1>
-                <p className="text-white/40 mt-1">Order-level profitability breakdown</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Análise de Lucro</h1>
+                <p className="text-white/40 mt-1">Detalhamento da lucratividade por pedido</p>
             </div>
 
             {summary && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="card text-center"><p className="text-white/40 text-xs">Orders Calculated</p><p className="text-2xl font-bold text-white mt-1">{summary.order_count}</p></div>
-                    <div className="card text-center"><p className="text-white/40 text-xs">Total Revenue</p><p className="text-2xl font-bold text-white mt-1">{summary.total_revenue.toFixed(2)}</p></div>
-                    <div className="card text-center"><p className="text-white/40 text-xs">Total Net Profit</p><p className={`text-2xl font-bold mt-1 ${marginColor(summary.total_net_profit)}`}>{summary.total_net_profit.toFixed(2)}</p></div>
-                    <div className="card text-center"><p className="text-white/40 text-xs">Avg Margin</p><p className={`text-2xl font-bold mt-1 ${marginColor(summary.avg_margin)}`}>{summary.avg_margin.toFixed(1)}%</p></div>
+                    <div className="card text-center"><p className="text-white/40 text-xs">Pedidos Calculados</p><p className="text-2xl font-bold text-white mt-1">{summary.order_count}</p></div>
+                    <div className="card text-center"><p className="text-white/40 text-xs">Receita Total</p><p className="text-2xl font-bold text-white mt-1">{summary.total_revenue.toFixed(2)}</p></div>
+                    <div className="card text-center"><p className="text-white/40 text-xs">Lucro Líquido Total</p><p className={`text-2xl font-bold mt-1 ${marginColor(summary.total_net_profit)}`}>{summary.total_net_profit.toFixed(2)}</p></div>
+                    <div className="card text-center"><p className="text-white/40 text-xs">Margem Média</p><p className={`text-2xl font-bold mt-1 ${marginColor(summary.avg_margin)}`}>{summary.avg_margin.toFixed(1)}%</p></div>
                 </div>
             )}
 
             <div className="flex gap-3">
                 <select value={channel} onChange={(e) => { setChannel(e.target.value); setPage(1); }} className="input-field w-auto text-sm">
-                    <option value="">All Channels</option>
+                    <option value="">Todos os Canais</option>
                     <option value="SHOPIFY">Shopify</option>
                 </select>
             </div>
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : profits.length === 0 ? <p className="text-white/30 text-sm">No profit data. Recalculate order profits first.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : profits.length === 0 ? <p className="text-white/30 text-sm">Sem dados de lucro. Recalcule os lucros dos pedidos primeiro.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Order</th>
-                                <th className="text-left py-3 px-2 text-white/40">Channel</th>
-                                <th className="text-right py-3 px-2 text-white/40">Revenue</th>
-                                <th className="text-right py-3 px-2 text-white/40">COGS</th>
-                                <th className="text-right py-3 px-2 text-white/40">Fees</th>
-                                <th className="text-right py-3 px-2 text-white/40">Shipping</th>
-                                <th className="text-right py-3 px-2 text-white/40">Net Profit</th>
-                                <th className="text-right py-3 px-2 text-white/40">Margin</th>
-                                <th className="text-left py-3 px-2 text-white/40">Calculated</th>
+                                <th className="text-left py-3 px-2 text-white/40">Pedido</th>
+                                <th className="text-left py-3 px-2 text-white/40">Canal</th>
+                                <th className="text-right py-3 px-2 text-white/40">Receita</th>
+                                <th className="text-right py-3 px-2 text-white/40">CMV</th>
+                                <th className="text-right py-3 px-2 text-white/40">Taxas</th>
+                                <th className="text-right py-3 px-2 text-white/40">Frete</th>
+                                <th className="text-right py-3 px-2 text-white/40">Lucro Líquido</th>
+                                <th className="text-right py-3 px-2 text-white/40">Margem</th>
+                                <th className="text-left py-3 px-2 text-white/40">Calculado Em</th>
                             </tr></thead>
                             <tbody>{profits.map((p) => {
                                 const margin = Number(p.margin_percent);
@@ -93,9 +93,9 @@ export default function ProfitAnalyticsPage() {
                 )}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Previous</button>
-                        <span className="text-xs text-white/30">Page {page} of {totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Next →</button>
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Anterior</button>
+                        <span className="text-xs text-white/30">Página {page} de {totalPages}</span>
+                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Próxima →</button>
                     </div>
                 )}
             </div>

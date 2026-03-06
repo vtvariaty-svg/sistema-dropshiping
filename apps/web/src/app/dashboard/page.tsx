@@ -28,24 +28,24 @@ export default function DashboardPage() {
             {/* Welcome */}
             <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-white">
-                    Welcome back{user ? `, ${user.email.split('@')[0]}` : ''}
+                    Bem-vindo de volta{user ? `, ${user.email.split('@')[0]}` : ''}
                 </h1>
                 <p className="text-white/40 mt-1">
-                    {user?.tenant.name} &middot; <span className="capitalize">{user?.tenant.plan}</span> plan
+                    {user?.tenant.name} &middot; <span className="capitalize">{user?.tenant.plan}</span>
                 </p>
             </div>
 
             {/* Stats cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {[
-                    { label: 'Pending Orders', value: placeholderStats.pendingOrders, icon: '📦', color: 'from-amber-500/20 to-amber-500/5' },
-                    { label: 'Active Products', value: placeholderStats.activeProducts, icon: '🏷️', color: 'from-emerald-500/20 to-emerald-500/5' },
-                    { label: 'Suppliers', value: placeholderStats.supplierCount, icon: '🏭', color: 'from-blue-500/20 to-blue-500/5' },
+                    { label: 'Pedidos Pendentes', value: placeholderStats.pendingOrders, icon: '📦', color: 'from-amber-500/20 to-amber-500/5' },
+                    { label: 'Produtos Ativos', value: placeholderStats.activeProducts, icon: '🏷️', color: 'from-emerald-500/20 to-emerald-500/5' },
+                    { label: 'Fornecedores', value: placeholderStats.supplierCount, icon: '🏭', color: 'from-blue-500/20 to-blue-500/5' },
                 ].map((stat) => (
                     <div key={stat.label} className={`card bg-gradient-to-br ${stat.color} border-white/5`}>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-2xl">{stat.icon}</span>
-                            <span className="text-xs text-white/30 uppercase tracking-wider font-medium">Module pending</span>
+                            <span className="text-xs text-white/30 uppercase tracking-wider font-medium">Em breve</span>
                         </div>
                         <p className="text-3xl font-bold text-white">{stat.value}</p>
                         <p className="text-sm text-white/50 mt-1">{stat.label}</p>
@@ -56,15 +56,15 @@ export default function DashboardPage() {
             {/* User info card */}
             {user && (
                 <div className="card">
-                    <h2 className="text-lg font-semibold text-white mb-4">Account Details</h2>
+                    <h2 className="text-lg font-semibold text-white mb-4">Detalhes da Conta</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[
-                            { label: 'Email', value: user.email },
-                            { label: 'Role', value: user.role },
-                            { label: 'Tenant', value: user.tenant.name },
-                            { label: 'Plan', value: user.tenant.plan },
-                            { label: 'User ID', value: user.id },
-                            { label: 'Tenant ID', value: user.tenant.id },
+                            { label: 'E-mail', value: user.email },
+                            { label: 'Função', value: user.role },
+                            { label: 'Empresa', value: user.tenant.name },
+                            { label: 'Plano', value: user.tenant.plan },
+                            { label: 'ID Usuário', value: user.id },
+                            { label: 'ID Empresa', value: user.tenant.id },
                         ].map((item) => (
                             <div key={item.label}>
                                 <p className="text-xs text-white/30 uppercase tracking-wider mb-1">{item.label}</p>

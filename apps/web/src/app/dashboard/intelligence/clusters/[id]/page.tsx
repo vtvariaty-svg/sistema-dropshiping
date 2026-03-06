@@ -54,8 +54,8 @@ export default function ClusterDetailPage() {
         return 'bg-red-500/10 text-red-400 border-red-500/20';
     };
 
-    if (loading) return <div className="text-white/30">Loading...</div>;
-    if (!cluster) return <div className="text-red-400">Cluster not found</div>;
+    if (loading) return <div className="text-white/30">Carregando...</div>;
+    if (!cluster) return <div className="text-red-400">Cluster não encontrado</div>;
 
     const s = market?.summary;
     const sh = market?.latestShopee;
@@ -65,97 +65,97 @@ export default function ClusterDetailPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <a href="/dashboard/intelligence/clusters" className="text-xs text-brand-400 hover:text-brand-300">← Back to Clusters</a>
+                    <a href="/dashboard/intelligence/clusters" className="text-xs text-brand-400 hover:text-brand-300">← Voltar para Clusters</a>
                     <h1 className="text-2xl lg:text-3xl font-bold text-white mt-1">{cluster.name_norm}</h1>
                     <p className="text-white/30 text-xs font-mono mt-1">#{cluster.fingerprint}</p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => collectSignals('SHOPEE')} disabled={!!collecting} className="btn-primary text-xs">{collecting === 'SHOPEE' ? '...' : '📡 Shopee'}</button>
                     <button onClick={() => collectSignals('TIKTOK')} disabled={!!collecting} className="btn-primary text-xs">{collecting === 'TIKTOK' ? '...' : '🎵 TikTok'}</button>
-                    <button onClick={recompute} disabled={recomputing} className="btn-primary text-xs">{recomputing ? '...' : '🔄 Score'}</button>
+                    <button onClick={recompute} disabled={recomputing} className="btn-primary text-xs">{recomputing ? '...' : '🔄 Pontuação'}</button>
                 </div>
             </div>
 
             {/* Internal Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="card text-center"><p className="text-white/40 text-xs">Orders</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.orderCount}</p></div>
-                <div className="card text-center"><p className="text-white/40 text-xs">Total Qty</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.totalQty}</p></div>
-                <div className="card text-center"><p className="text-white/40 text-xs">Revenue</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.revenue.toFixed(2)}</p></div>
-                <div className="card text-center"><p className="text-white/40 text-xs">Avg Margin</p><p className={`text-2xl font-bold mt-1 ${cluster.metrics.avgMargin >= 20 ? 'text-emerald-400' : cluster.metrics.avgMargin >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{cluster.metrics.avgMargin.toFixed(1)}%</p></div>
+                <div className="card text-center"><p className="text-white/40 text-xs">Pedidos</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.orderCount}</p></div>
+                <div className="card text-center"><p className="text-white/40 text-xs">Qtd Total</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.totalQty}</p></div>
+                <div className="card text-center"><p className="text-white/40 text-xs">Receita</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.revenue.toFixed(2)}</p></div>
+                <div className="card text-center"><p className="text-white/40 text-xs">Margem Média</p><p className={`text-2xl font-bold mt-1 ${cluster.metrics.avgMargin >= 20 ? 'text-emerald-400' : cluster.metrics.avgMargin >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{cluster.metrics.avgMargin.toFixed(1)}%</p></div>
             </div>
 
             {/* Score Breakdown */}
             {cluster.score ? (
                 <div className="card">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-white">Score Breakdown</h2>
+                        <h2 className="text-lg font-semibold text-white">Detalhamento da Pontuação</h2>
                         <span className={`inline-flex px-3 py-1 rounded-full text-sm font-bold border ${recColor(cluster.score.recommendation)}`}>{cluster.score.recommendation}</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                        <div><span className="text-white/40 block">Margin</span><span className="text-white font-mono font-bold">{Number(cluster.score.margin_score).toFixed(1)}</span></div>
-                        <div><span className="text-white/40 block">Demand</span><span className="text-white font-mono font-bold">{Number(cluster.score.demand_score).toFixed(1)}</span></div>
-                        <div><span className="text-white/40 block">Competition</span><span className="text-white font-mono font-bold">{Number(cluster.score.competition_score).toFixed(1)}</span></div>
+                        <div><span className="text-white/40 block">Margem</span><span className="text-white font-mono font-bold">{Number(cluster.score.margin_score).toFixed(1)}</span></div>
+                        <div><span className="text-white/40 block">Demanda</span><span className="text-white font-mono font-bold">{Number(cluster.score.demand_score).toFixed(1)}</span></div>
+                        <div><span className="text-white/40 block">Concorrência</span><span className="text-white font-mono font-bold">{Number(cluster.score.competition_score).toFixed(1)}</span></div>
                         <div><span className="text-white/40 block">Viral</span><span className="text-white font-mono font-bold">{Number(cluster.score.viral_score).toFixed(1)}</span></div>
                         <div><span className="text-white/40 block">Final</span><span className="text-white font-mono text-xl font-bold">{Number(cluster.score.final_score).toFixed(1)}</span></div>
                     </div>
-                    <p className="text-white/20 text-xs mt-4">v{cluster.score.score_version} · Calculated {new Date(cluster.score.calculated_at).toLocaleString()}</p>
+                    <p className="text-white/20 text-xs mt-4">v{cluster.score.score_version} · Calculado em {new Date(cluster.score.calculated_at).toLocaleString()}</p>
                 </div>
             ) : (
-                <div className="card"><p className="text-white/30 text-sm">No score yet. Click Recompute.</p></div>
+                <div className="card"><p className="text-white/30 text-sm">Sem pontuação ainda. Clique em Recomputar.</p></div>
             )}
 
             {/* External Market Summary */}
             <div className="card">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-white">📊 External Market Summary</h2>
+                    <h2 className="text-lg font-semibold text-white">📊 Resumo do Mercado Externo</h2>
                     <div className="flex gap-2">
-                        <button onClick={recomputeSummary} className="text-xs text-brand-400 hover:text-brand-300">Recompute Summary</button>
-                        <button onClick={recomputeScore} className="text-xs text-purple-400 hover:text-purple-300">Recompute Full Score</button>
+                        <button onClick={recomputeSummary} className="text-xs text-brand-400 hover:text-brand-300">Recomputar Resumo</button>
+                        <button onClick={recomputeScore} className="text-xs text-purple-400 hover:text-purple-300">Recomputar Pontuação Completa</button>
                     </div>
                 </div>
                 {s ? (
                     <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div><span className="text-white/40 block">Ext. Demand</span><span className="text-white font-mono font-bold">{s.external_demand_score != null ? Number(s.external_demand_score).toFixed(1) : '—'}</span></div>
-                        <div><span className="text-white/40 block">Ext. Competition</span><span className="text-white font-mono font-bold">{s.external_competition_score != null ? Number(s.external_competition_score).toFixed(1) : '—'}</span></div>
-                        <div><span className="text-white/40 block">Ext. Viral</span><span className="text-white font-mono font-bold">{s.external_viral_score != null ? Number(s.external_viral_score).toFixed(1) : '—'}</span></div>
+                        <div><span className="text-white/40 block">Demanda Ext.</span><span className="text-white font-mono font-bold">{s.external_demand_score != null ? Number(s.external_demand_score).toFixed(1) : '—'}</span></div>
+                        <div><span className="text-white/40 block">Concorrência Ext.</span><span className="text-white font-mono font-bold">{s.external_competition_score != null ? Number(s.external_competition_score).toFixed(1) : '—'}</span></div>
+                        <div><span className="text-white/40 block">Viral Ext.</span><span className="text-white font-mono font-bold">{s.external_viral_score != null ? Number(s.external_viral_score).toFixed(1) : '—'}</span></div>
                     </div>
-                ) : <p className="text-white/30 text-sm">No external summary. Collect signals first.</p>}
+                ) : <p className="text-white/30 text-sm">Sem resumo externo. Colete sinais primeiro.</p>}
             </div>
 
             {/* Latest Shopee */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="card">
-                    <h2 className="text-base font-semibold text-white mb-3">🛒 Latest Shopee</h2>
+                    <h2 className="text-base font-semibold text-white mb-3">🛒 Shopee (Últimos Dados)</h2>
                     {sh ? (
                         <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div><span className="text-white/40 block text-xs">Avg Price</span><span className="text-white font-mono">{sh.price_avg ? Number(sh.price_avg).toFixed(2) : '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Sales Est.</span><span className="text-white font-mono">{sh.sales_est ? Number(sh.sales_est).toFixed(0) : '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Sellers</span><span className="text-white font-mono">{sh.sellers_count ?? '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Rating</span><span className="text-white font-mono">{sh.rating_avg ? `⭐ ${Number(sh.rating_avg).toFixed(1)}` : '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Reviews</span><span className="text-white font-mono">{sh.reviews_count ?? '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Collected</span><span className="text-white/30 text-xs">{new Date(sh.snapshot_at).toLocaleString()}</span></div>
+                            <div><span className="text-white/40 block text-xs">Preço Médio</span><span className="text-white font-mono">{sh.price_avg ? Number(sh.price_avg).toFixed(2) : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Vendas Est.</span><span className="text-white font-mono">{sh.sales_est ? Number(sh.sales_est).toFixed(0) : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Vendedores</span><span className="text-white font-mono">{sh.sellers_count ?? '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Avaliação</span><span className="text-white font-mono">{sh.rating_avg ? `⭐ ${Number(sh.rating_avg).toFixed(1)}` : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Comentários</span><span className="text-white font-mono">{sh.reviews_count ?? '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Coletado</span><span className="text-white/30 text-xs">{new Date(sh.snapshot_at).toLocaleString()}</span></div>
                         </div>
-                    ) : <p className="text-white/30 text-sm">No Shopee data collected.</p>}
+                    ) : <p className="text-white/30 text-sm">Nenhum dado da Shopee coletado.</p>}
                 </div>
 
                 <div className="card">
-                    <h2 className="text-base font-semibold text-white mb-3">🎵 Latest TikTok</h2>
+                    <h2 className="text-base font-semibold text-white mb-3">🎵 TikTok (Últimos Dados)</h2>
                     {tk ? (
                         <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div><span className="text-white/40 block text-xs">Videos</span><span className="text-white font-mono">{tk.videos_count ?? '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Total Views</span><span className="text-white font-mono">{tk.views_total ? Number(tk.views_total).toLocaleString() : '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Avg Likes</span><span className="text-white font-mono">{tk.likes_avg ? Number(tk.likes_avg).toLocaleString() : '—'}</span></div>
-                            <div><span className="text-white/40 block text-xs">Growth Rate</span><span className={`font-mono ${Number(tk.growth_rate ?? 0) > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{tk.growth_rate ? `${Number(tk.growth_rate).toFixed(1)}%` : '—'}</span></div>
-                            <div className="col-span-2"><span className="text-white/40 block text-xs">Collected</span><span className="text-white/30 text-xs">{new Date(tk.snapshot_at).toLocaleString()}</span></div>
+                            <div><span className="text-white/40 block text-xs">Vídeos</span><span className="text-white font-mono">{tk.videos_count ?? '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Total de Visualizações</span><span className="text-white font-mono">{tk.views_total ? Number(tk.views_total).toLocaleString() : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Curtidas Média</span><span className="text-white font-mono">{tk.likes_avg ? Number(tk.likes_avg).toLocaleString() : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Taxa de Cresc.</span><span className={`font-mono ${Number(tk.growth_rate ?? 0) > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{tk.growth_rate ? `${Number(tk.growth_rate).toFixed(1)}%` : '—'}</span></div>
+                            <div className="col-span-2"><span className="text-white/40 block text-xs">Coletado</span><span className="text-white/30 text-xs">{new Date(tk.snapshot_at).toLocaleString()}</span></div>
                         </div>
-                    ) : <p className="text-white/30 text-sm">No TikTok data collected.</p>}
+                    ) : <p className="text-white/30 text-sm">Nenhum dado do TikTok coletado.</p>}
                 </div>
             </div>
 
             {/* Linked Products */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Linked Products ({cluster.cluster_links.length})</h2>
-                {cluster.cluster_links.length === 0 ? <p className="text-white/30 text-sm">No products linked.</p> : (
+                <h2 className="text-lg font-semibold text-white mb-4">Produtos Vinculados ({cluster.cluster_links.length})</h2>
+                {cluster.cluster_links.length === 0 ? <p className="text-white/30 text-sm">Nenhum produto vinculado.</p> : (
                     <div className="space-y-2">
                         {cluster.cluster_links.map((link, i) => (
                             <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">

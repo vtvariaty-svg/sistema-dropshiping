@@ -47,29 +47,29 @@ export default function WebhookInboxPage() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-white">Webhook Inbox</h1>
-                    <p className="text-white/40 mt-1">Incoming Shopify webhook events</p>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-white">Caixa de Entrada de Webhooks</h1>
+                    <p className="text-white/40 mt-1">Eventos de webhooks Shopify recebidos</p>
                 </div>
                 <a href="/dashboard/integrations/shopify" className="text-sm text-brand-400 hover:text-brand-300 transition-colors">
-                    ← Back to Stores
+                    ← Voltar para Lojas
                 </a>
             </div>
 
             <div className="card">
                 {loading ? (
-                    <p className="text-white/30 text-sm">Loading...</p>
+                    <p className="text-white/30 text-sm">Carregando...</p>
                 ) : webhooks.length === 0 ? (
-                    <p className="text-white/30 text-sm">No webhooks received yet.</p>
+                    <p className="text-white/30 text-sm">Nenhum webhook recebido ainda.</p>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-white/10">
-                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Topic</th>
-                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Received</th>
+                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Tópico</th>
+                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Recebido</th>
                                     <th className="text-left py-3 px-2 text-white/40 font-medium">Status</th>
-                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Error</th>
-                                    <th className="text-right py-3 px-2 text-white/40 font-medium">Actions</th>
+                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Erro</th>
+                                    <th className="text-right py-3 px-2 text-white/40 font-medium">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -94,7 +94,7 @@ export default function WebhookInboxPage() {
                                                     disabled={retrying === wh.id}
                                                     className="text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50 transition-colors"
                                                 >
-                                                    {retrying === wh.id ? 'Retrying...' : 'Retry'}
+                                                    {retrying === wh.id ? 'Tentando...' : 'Tentar Novamente'}
                                                 </button>
                                             )}
                                         </td>

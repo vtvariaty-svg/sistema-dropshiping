@@ -36,30 +36,30 @@ export default function ClustersPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-white">Product Clusters</h1>
-                    <p className="text-white/40 mt-1">Normalized product groupings with intelligence scores</p>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-white">Clusters de Produtos</h1>
+                    <p className="text-white/40 mt-1">Agrupamentos de produtos normalizados com pontuações de inteligência</p>
                 </div>
-                <button onClick={recomputeAll} disabled={recomputing} className="btn-primary text-sm">{recomputing ? 'Computing...' : '🔄 Recompute All'}</button>
+                <button onClick={recomputeAll} disabled={recomputing} className="btn-primary text-sm">{recomputing ? 'Computando...' : '🔄 Recomputar Todos'}</button>
             </div>
 
             <div className="flex gap-2">
                 {['', 'SCALE', 'TEST', 'MONITOR', 'AVOID'].map((f) => (
                     <button key={f} onClick={() => setFilter(f)} className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${filter === f ? 'border-brand-400 text-brand-400 bg-brand-400/10' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
-                        {f || 'All'}
+                        {f || 'Todos'}
                     </button>
                 ))}
             </div>
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : filtered.length === 0 ? <p className="text-white/30 text-sm">No clusters found.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : filtered.length === 0 ? <p className="text-white/30 text-sm">Nenhum cluster encontrado.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Cluster Name</th>
-                                <th className="text-right py-3 px-2 text-white/40">Score</th>
-                                <th className="text-center py-3 px-2 text-white/40">Recommendation</th>
-                                <th className="text-left py-3 px-2 text-white/40">Products</th>
-                                <th className="text-left py-3 px-2 text-white/40">Calculated</th>
+                                <th className="text-left py-3 px-2 text-white/40">Nome do Cluster</th>
+                                <th className="text-right py-3 px-2 text-white/40">Pontuação</th>
+                                <th className="text-center py-3 px-2 text-white/40">Recomendação</th>
+                                <th className="text-left py-3 px-2 text-white/40">Produtos</th>
+                                <th className="text-left py-3 px-2 text-white/40">Calculado Em</th>
                                 <th className="text-right py-3 px-2 text-white/40"></th>
                             </tr></thead>
                             <tbody>{filtered.map((c) => (
@@ -69,7 +69,7 @@ export default function ClustersPage() {
                                     <td className="py-3 px-2 text-center">{c.score ? <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${recColor(c.score.recommendation)}`}>{c.score.recommendation}</span> : <span className="text-white/20">—</span>}</td>
                                     <td className="py-3 px-2 text-white/50 text-xs">{c.cluster_links.length}</td>
                                     <td className="py-3 px-2 text-white/30 text-xs">{c.score ? new Date(c.score.calculated_at).toLocaleDateString() : '—'}</td>
-                                    <td className="py-3 px-2 text-right"><a href={`/dashboard/intelligence/clusters/${c.id}`} className="text-xs text-brand-400 hover:text-brand-300">View →</a></td>
+                                    <td className="py-3 px-2 text-right"><a href={`/dashboard/intelligence/clusters/${c.id}`} className="text-xs text-brand-400 hover:text-brand-300">Ver →</a></td>
                                 </tr>
                             ))}</tbody>
                         </table>

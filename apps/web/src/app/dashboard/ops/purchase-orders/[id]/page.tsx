@@ -44,16 +44,16 @@ export default function PODetailPage() {
 
     const act = async (action: string) => {
         setActing(true); setMessage('');
-        try { await apiFetch(`/purchase-orders/${poId}/${action}`, { method: 'POST' }); setMessage(`${action} done`); load(); }
-        catch (e) { setMessage(`Failed: ${e}`); } finally { setActing(false); }
+        try { await apiFetch(`/purchase-orders/${poId}/${action}`, { method: 'POST' }); setMessage(`${action} concluído`); load(); }
+        catch (e) { setMessage(`Falha: ${e}`); } finally { setActing(false); }
     };
 
     const submitTracking = async () => {
         setActing(true); setMessage('');
         try {
             await apiFetch(`/purchase-orders/${poId}/tracking`, { method: 'POST', body: JSON.stringify(trackForm) });
-            setMessage('Tracking registered & sync enqueued'); setShowTrackingForm(false); load();
-        } catch (e) { setMessage(`Failed: ${e}`); } finally { setActing(false); }
+            setMessage('Rastreamento registrado e sincronização na fila'); setShowTrackingForm(false); load();
+        } catch (e) { setMessage(`Falha: ${e}`); } finally { setActing(false); }
     };
 
     const download = (artifactId: string) => {
@@ -62,8 +62,8 @@ export default function PODetailPage() {
         window.open(`${baseUrl}/purchase-orders/${poId}/artifacts/${artifactId}/download?token=${token}`, '_blank');
     };
 
-    if (loading) return <div className="text-white/30">Loading...</div>;
-    if (!po) return <div className="text-red-400">PO not found</div>;
+    if (loading) return <div className="text-white/30">Carregando...</div>;
+    if (!po) return <div className="text-red-400">OC não encontrada</div>;
 
     const shipping = po.order.addresses.find((a) => a.type === 'shipping');
     const stColor = (s: string) => {
@@ -77,22 +77,22 @@ export default function PODetailPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                    <a href="/dashboard/ops/purchase-orders" className="text-sm text-brand-400 hover:text-brand-300">← Back to POs</a>
-                    <h1 className="text-2xl font-bold text-white mt-1">Purchase Order</h1>
+                    <a href="/dashboard/ops/purchase-orders" className="text-sm text-brand-400 hover:text-brand-300">← Voltar para OCs</a>
+                    <h1 className="text-2xl font-bold text-white mt-1">Ordem de Compra</h1>
                     <p className="text-white/40 text-xs font-mono mt-0.5">{po.id}</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                     {po.status === 'CREATED' && (
-                        <button onClick={() => act('generate-artifacts')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">📄 Generate Artifacts</button>
+                        <button onClick={() => act('generate-artifacts')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">📄 Gerar Artefatos</button>
                     )}
                     {po.status === 'READY_TO_DISPATCH' && (
-                        <button onClick={() => act('dispatch')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">🚀 Dispatch</button>
+                        <button onClick={() => act('dispatch')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">🚀 Enviar</button>
                     )}
                     {(po.status === 'DISPATCHED' || po.status === 'SHIPPED') && (
-                        <button onClick={() => setShowTrackingForm(true)} className="btn-primary text-sm">📦 Add Tracking</button>
+                        <button onClick={() => setShowTrackingForm(true)} className="btn-primary text-sm">📦 Adicionar Rastreamento</button>
                     )}
                     {po.status !== 'DISPATCHED' && po.status !== 'SHIPPED' && po.status !== 'CANCELLED' && (
-                        <button onClick={() => act('cancel')} disabled={acting} className="text-sm px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">Cancel</button>
+                        <button onClick={() => act('cancel')} disabled={acting} className="text-sm px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">Cancelar</button>
                     )}
                 </div>
             </div>
@@ -101,61 +101,61 @@ export default function PODetailPage() {
 
             {/* Summary */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Summary</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Resumo</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div><span className="text-white/40 block">Status</span>
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${stColor(po.status)}`}>{po.status}</span>
                     </div>
-                    <div><span className="text-white/40 block">Total Cost</span><span className="text-white font-mono">{po.currency} {Number(po.total_cost).toFixed(2)}</span></div>
-                    <div><span className="text-white/40 block">Created</span><span className="text-white">{new Date(po.created_at).toLocaleString()}</span></div>
-                    <div><span className="text-white/40 block">Sent</span><span className="text-white">{po.sent_at ? new Date(po.sent_at).toLocaleString() : '—'}</span></div>
+                    <div><span className="text-white/40 block">Custo Total</span><span className="text-white font-mono">{po.currency} {Number(po.total_cost).toFixed(2)}</span></div>
+                    <div><span className="text-white/40 block">Criada</span><span className="text-white">{new Date(po.created_at).toLocaleString()}</span></div>
+                    <div><span className="text-white/40 block">Enviada</span><span className="text-white">{po.sent_at ? new Date(po.sent_at).toLocaleString() : '—'}</span></div>
                 </div>
             </div>
 
             {/* Tracking */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Tracking</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Rastreamento</h2>
                 {showTrackingForm && (
                     <div className="space-y-3 mb-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <input className="input-field" placeholder="Carrier (optional)" value={trackForm.carrier} onChange={(e) => setTrackForm({ ...trackForm, carrier: e.target.value })} />
-                            <input className="input-field" placeholder="Tracking Code *" value={trackForm.tracking_code} onChange={(e) => setTrackForm({ ...trackForm, tracking_code: e.target.value })} />
-                            <input className="input-field" placeholder="Tracking URL (optional)" value={trackForm.tracking_url} onChange={(e) => setTrackForm({ ...trackForm, tracking_url: e.target.value })} />
+                            <input className="input-field" placeholder="Transportadora (opcional)" value={trackForm.carrier} onChange={(e) => setTrackForm({ ...trackForm, carrier: e.target.value })} />
+                            <input className="input-field" placeholder="Código de Rastreio *" value={trackForm.tracking_code} onChange={(e) => setTrackForm({ ...trackForm, tracking_code: e.target.value })} />
+                            <input className="input-field" placeholder="URL de Rastreamento (opcional)" value={trackForm.tracking_url} onChange={(e) => setTrackForm({ ...trackForm, tracking_url: e.target.value })} />
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={submitTracking} disabled={acting || !trackForm.tracking_code} className="btn-primary text-sm disabled:opacity-50">Submit & Sync</button>
-                            <button onClick={() => setShowTrackingForm(false)} className="text-sm text-white/40 hover:text-white/60">Cancel</button>
+                            <button onClick={submitTracking} disabled={acting || !trackForm.tracking_code} className="btn-primary text-sm disabled:opacity-50">Enviar e Sincronizar</button>
+                            <button onClick={() => setShowTrackingForm(false)} className="text-sm text-white/40 hover:text-white/60">Cancelar</button>
                         </div>
                     </div>
                 )}
                 {tracking ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div><span className="text-white/40 block">Carrier</span><span className="text-white">{tracking.carrier ?? '—'}</span></div>
-                        <div><span className="text-white/40 block">Code</span><span className="text-white font-mono">{tracking.tracking_code}</span></div>
+                        <div><span className="text-white/40 block">Transportador</span><span className="text-white">{tracking.carrier ?? '—'}</span></div>
+                        <div><span className="text-white/40 block">Código</span><span className="text-white font-mono">{tracking.tracking_code}</span></div>
                         <div><span className="text-white/40 block">URL</span>
-                            {tracking.tracking_url ? <a href={tracking.tracking_url} target="_blank" rel="noreferrer" className="text-brand-400 text-xs hover:text-brand-300">Track →</a> : <span className="text-white/30">—</span>}
+                            {tracking.tracking_url ? <a href={tracking.tracking_url} target="_blank" rel="noreferrer" className="text-brand-400 text-xs hover:text-brand-300">Rastrear →</a> : <span className="text-white/30">—</span>}
                         </div>
-                        <div><span className="text-white/40 block">Sync Status</span>
+                        <div><span className="text-white/40 block">Status Sinc.</span>
                             <span className={`px-2 py-0.5 rounded-full text-xs ${tracking.status === 'SYNCED' ? 'bg-emerald-500/10 text-emerald-400' : tracking.status === 'FAILED' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>{tracking.status}</span>
                         </div>
                     </div>
-                ) : <p className="text-white/30 text-sm">No tracking registered.</p>}
+                ) : <p className="text-white/30 text-sm">Nenhum rastreamento registrado.</p>}
             </div>
 
             {/* Supplier + Order */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="card">
-                    <h2 className="text-lg font-semibold text-white mb-3">Supplier</h2>
+                    <h2 className="text-lg font-semibold text-white mb-3">Fornecedor</h2>
                     <div className="text-sm space-y-1">
                         <p className="text-white font-medium">{po.supplier.name}</p>
                         {po.supplier.contact_email && <p className="text-white/50">{po.supplier.contact_email}</p>}
                     </div>
                 </div>
                 <div className="card">
-                    <h2 className="text-lg font-semibold text-white mb-3">Order & Shipping</h2>
+                    <h2 className="text-lg font-semibold text-white mb-3">Pedido e Entrega</h2>
                     <div className="text-sm space-y-1">
-                        <p className="text-white font-medium">Order #{po.order.external_order_number}</p>
-                        <a href={`/dashboard/ops/orders/${po.order.id}`} className="text-brand-400 text-xs hover:text-brand-300">View Order →</a>
+                        <p className="text-white font-medium">Pedido #{po.order.external_order_number}</p>
+                        <a href={`/dashboard/ops/orders/${po.order.id}`} className="text-brand-400 text-xs hover:text-brand-300">Ver Pedido →</a>
                         {shipping && (
                             <div className="mt-2 text-white/50">
                                 {shipping.name && <p>{shipping.name}</p>}
@@ -170,15 +170,15 @@ export default function PODetailPage() {
 
             {/* Items */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Items ({po.items.length})</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">Itens ({po.items.length})</h2>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead><tr className="border-b border-white/10">
-                            <th className="text-left py-2 px-2 text-white/40">Supplier SKU</th>
-                            <th className="text-left py-2 px-2 text-white/40">Title</th>
-                            <th className="text-right py-2 px-2 text-white/40">Qty</th>
-                            <th className="text-right py-2 px-2 text-white/40">Unit Cost</th>
-                            <th className="text-right py-2 px-2 text-white/40">Line Total</th>
+                            <th className="text-left py-2 px-2 text-white/40">SKU do Fornecedor</th>
+                            <th className="text-left py-2 px-2 text-white/40">Título</th>
+                            <th className="text-right py-2 px-2 text-white/40">Qtd</th>
+                            <th className="text-right py-2 px-2 text-white/40">Custo Unitário</th>
+                            <th className="text-right py-2 px-2 text-white/40">Total da Linha</th>
                         </tr></thead>
                         <tbody>{po.items.map((item) => (
                             <tr key={item.id} className="border-b border-white/5">
@@ -195,8 +195,8 @@ export default function PODetailPage() {
 
             {/* Artifacts */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Artifacts ({po.artifacts.length})</h2>
-                {po.artifacts.length === 0 ? <p className="text-white/30 text-sm">No artifacts generated.</p> : (
+                <h2 className="text-lg font-semibold text-white mb-4">Artefatos ({po.artifacts.length})</h2>
+                {po.artifacts.length === 0 ? <p className="text-white/30 text-sm">Nenhum artefato gerado.</p> : (
                     <div className="space-y-2">
                         {po.artifacts.map((a) => (
                             <div key={a.id} className="flex items-center justify-between py-2 border-b border-white/5">
@@ -204,7 +204,7 @@ export default function PODetailPage() {
                                     <span className="text-white font-medium text-sm">{a.type}</span>
                                     <span className="text-white/30 text-xs">{new Date(a.created_at).toLocaleString()}</span>
                                 </div>
-                                <button onClick={() => download(a.id)} className="text-xs text-brand-400 hover:text-brand-300">Download</button>
+                                <button onClick={() => download(a.id)} className="text-xs text-brand-400 hover:text-brand-300">Baixar</button>
                             </div>
                         ))}
                     </div>
@@ -213,8 +213,8 @@ export default function PODetailPage() {
 
             {/* Fulfillment Sync Logs */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Fulfillment Sync Logs ({syncLogs.length})</h2>
-                {syncLogs.length === 0 ? <p className="text-white/30 text-sm">No sync attempts.</p> : (
+                <h2 className="text-lg font-semibold text-white mb-4">Logs de Sincronização de Atendimento ({syncLogs.length})</h2>
+                {syncLogs.length === 0 ? <p className="text-white/30 text-sm">Nenhuma tentativa de sincronização.</p> : (
                     <div className="space-y-2">
                         {syncLogs.map((log) => (
                             <div key={log.id} className="flex items-center justify-between py-2 border-b border-white/5 text-sm">
@@ -232,8 +232,8 @@ export default function PODetailPage() {
 
             {/* Events */}
             <div className="card">
-                <h2 className="text-lg font-semibold text-white mb-4">Events ({po.events.length})</h2>
-                {po.events.length === 0 ? <p className="text-white/30 text-sm">No events.</p> : (
+                <h2 className="text-lg font-semibold text-white mb-4">Eventos ({po.events.length})</h2>
+                {po.events.length === 0 ? <p className="text-white/30 text-sm">Nenhum evento.</p> : (
                     <div className="space-y-2">
                         {po.events.map((ev) => (
                             <div key={ev.id} className="flex items-center justify-between py-2 border-b border-white/5 text-sm">

@@ -38,60 +38,60 @@ export default function SkuMappingsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Delete this mapping?')) return;
+        if (!confirm('Excluir este mapeamento?')) return;
         try { await apiFetch(`/sku-mappings/${id}`, { method: 'DELETE' }); load(); } catch { }
     };
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <div><h1 className="text-2xl lg:text-3xl font-bold text-white">SKU Mappings</h1>
-                    <p className="text-white/40 mt-1">Map Shopify SKUs to supplier products</p></div>
-                <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary text-sm">+ Add Mapping</button>
+                <div><h1 className="text-2xl lg:text-3xl font-bold text-white">Mapeamento de SKUs</h1>
+                    <p className="text-white/40 mt-1">Mapear SKUs da Shopify para produtos de fornecedores</p></div>
+                <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary text-sm">+ Adicionar Mapeamento</button>
             </div>
 
             <div className="flex gap-3">
                 <select value={filterSupplier} onChange={(e) => setFilterSupplier(e.target.value)} className="input-field w-auto text-sm">
-                    <option value="">All Suppliers</option>
+                    <option value="">Todos os Fornecedores</option>
                     {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
             </div>
 
             {showForm && (
                 <div className="card space-y-4">
-                    <h2 className="text-lg font-semibold text-white">New Mapping</h2>
+                    <h2 className="text-lg font-semibold text-white">Novo Mapeamento</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input className="input-field" placeholder="Shopify SKU" value={form.shopify_sku} onChange={(e) => setForm({ ...form, shopify_sku: e.target.value })} />
-                        <input className="input-field" placeholder="Shopify Variant ID" value={form.shopify_variant_id} onChange={(e) => setForm({ ...form, shopify_variant_id: e.target.value })} />
+                        <input className="input-field" placeholder="SKU da Shopify" value={form.shopify_sku} onChange={(e) => setForm({ ...form, shopify_sku: e.target.value })} />
+                        <input className="input-field" placeholder="ID da Variante Shopify" value={form.shopify_variant_id} onChange={(e) => setForm({ ...form, shopify_variant_id: e.target.value })} />
                         <select className="input-field" value={form.supplier_id} onChange={(e) => setForm({ ...form, supplier_id: e.target.value, supplier_product_id: '' })}>
-                            <option value="">Select Supplier *</option>
+                            <option value="">Selecione o Fornecedor *</option>
                             {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                         </select>
                         <select className="input-field" value={form.supplier_product_id} onChange={(e) => setForm({ ...form, supplier_product_id: e.target.value })}>
-                            <option value="">Select Product *</option>
+                            <option value="">Selecione o Produto *</option>
                             {products.map((p) => <option key={p.id} value={p.id}>{p.supplier_sku} — {p.name}</option>)}
                         </select>
                     </div>
-                    <p className="text-white/30 text-xs">At least one of Shopify SKU or Variant ID is required.</p>
+                    <p className="text-white/30 text-xs">Pelo menos um entre SKU da Shopify ou ID da Variante é obrigatório.</p>
                     <div className="flex gap-2">
-                        <button onClick={handleSave} className="btn-primary text-sm">Create</button>
-                        <button onClick={resetForm} className="text-sm text-white/40 hover:text-white/60">Cancel</button>
+                        <button onClick={handleSave} className="btn-primary text-sm">Criar</button>
+                        <button onClick={resetForm} className="text-sm text-white/40 hover:text-white/60">Cancelar</button>
                     </div>
                 </div>
             )}
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : mappings.length === 0 ? <p className="text-white/30 text-sm">No mappings.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : mappings.length === 0 ? <p className="text-white/30 text-sm">Nenhum mapeamento.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-2 text-white/40">Channel</th>
-                                <th className="text-left py-3 px-2 text-white/40">Shopify SKU</th>
-                                <th className="text-left py-3 px-2 text-white/40">Variant ID</th>
-                                <th className="text-left py-3 px-2 text-white/40">Supplier</th>
-                                <th className="text-left py-3 px-2 text-white/40">Supplier SKU</th>
+                                <th className="text-left py-3 px-2 text-white/40">Canal</th>
+                                <th className="text-left py-3 px-2 text-white/40">SKU da Shopify</th>
+                                <th className="text-left py-3 px-2 text-white/40">ID da Variante</th>
+                                <th className="text-left py-3 px-2 text-white/40">Fornecedor</th>
+                                <th className="text-left py-3 px-2 text-white/40">SKU do Fornecedor</th>
                                 <th className="text-left py-3 px-2 text-white/40">Status</th>
-                                <th className="text-right py-3 px-2 text-white/40">Actions</th>
+                                <th className="text-right py-3 px-2 text-white/40">Ações</th>
                             </tr></thead>
                             <tbody>{mappings.map((m) => (
                                 <tr key={m.id} className="border-b border-white/5 hover:bg-white/[0.02]">
@@ -101,10 +101,10 @@ export default function SkuMappingsPage() {
                                     <td className="py-3 px-2 text-white/70 text-xs">{m.supplier.name}</td>
                                     <td className="py-3 px-2 text-white font-mono text-xs">{m.supplier_product.supplier_sku}</td>
                                     <td className="py-3 px-2">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs ${m.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>{m.active ? 'Active' : 'Inactive'}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-xs ${m.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>{m.active ? 'Ativo' : 'Inativo'}</span>
                                     </td>
                                     <td className="py-3 px-2 text-right">
-                                        <button onClick={() => handleDelete(m.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                                        <button onClick={() => handleDelete(m.id)} className="text-xs text-red-400 hover:text-red-300">Excluir</button>
                                     </td>
                                 </tr>
                             ))}</tbody>

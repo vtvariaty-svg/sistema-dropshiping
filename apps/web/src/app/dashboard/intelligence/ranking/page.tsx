@@ -40,30 +40,30 @@ export default function RankingPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white">Product Ranking</h1>
-                <p className="text-white/40 mt-1">Products ranked by intelligence score</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Ranking de Produtos</h1>
+                <p className="text-white/40 mt-1">Produtos classificados por pontuação de inteligência</p>
             </div>
 
             <div className="flex gap-2">
                 {['', 'SCALE', 'TEST', 'MONITOR', 'AVOID'].map((f) => (
                     <button key={f} onClick={() => { setFilter(f); setPage(1); }} className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${filter === f ? 'border-brand-400 text-brand-400 bg-brand-400/10' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
-                        {f || 'All'}
+                        {f || 'Todos'}
                     </button>
                 ))}
             </div>
 
             <div className="card">
-                {loading ? <p className="text-white/30 text-sm">Loading...</p> : scores.length === 0 ? <p className="text-white/30 text-sm">No scores. Recompute cluster scores first.</p> : (
+                {loading ? <p className="text-white/30 text-sm">Carregando...</p> : scores.length === 0 ? <p className="text-white/30 text-sm">Sem pontuações. Recompute as pontuações dos clusters primeiro.</p> : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead><tr className="border-b border-white/10">
                                 <th className="text-left py-3 px-2 text-white/40">#</th>
                                 <th className="text-left py-3 px-2 text-white/40">Cluster</th>
-                                <th className="text-right py-3 px-2 text-white/40">Score</th>
-                                <th className="text-center py-3 px-2 text-white/40">Recommendation</th>
-                                <th className="text-right py-3 px-2 text-white/40">Margin Score</th>
-                                <th className="text-right py-3 px-2 text-white/40">Demand Score</th>
-                                <th className="text-left py-3 px-2 text-white/40">Calculated</th>
+                                <th className="text-right py-3 px-2 text-white/40">Pontuação</th>
+                                <th className="text-center py-3 px-2 text-white/40">Recomendação</th>
+                                <th className="text-right py-3 px-2 text-white/40">Pont. Margem</th>
+                                <th className="text-right py-3 px-2 text-white/40">Pont. Demanda</th>
+                                <th className="text-left py-3 px-2 text-white/40">Calculado Em</th>
                             </tr></thead>
                             <tbody>{scores.map((s, i) => (
                                 <tr key={s.id} className="border-b border-white/5 hover:bg-white/[0.02]">
@@ -81,9 +81,9 @@ export default function RankingPage() {
                 )}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Previous</button>
-                        <span className="text-xs text-white/30">Page {page} of {totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Next →</button>
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="text-xs text-brand-400 disabled:opacity-30">← Anterior</button>
+                        <span className="text-xs text-white/30">Página {page} de {totalPages}</span>
+                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="text-xs text-brand-400 disabled:opacity-30">Próxima →</button>
                     </div>
                 )}
             </div>
