@@ -29,6 +29,8 @@ model Tenant {
   po_items           PurchaseOrderItem[]
   po_artifacts       PoArtifact[]
   po_events          PoEvent[]
+  shipment_trackings ShipmentTracking[]
+  fulfillment_logs   FulfillmentSyncLog[]
 
   @@map("tenants")
 }
@@ -163,7 +165,8 @@ model Order {
   items     OrderItem[]
   addresses OrderAddress[]
   events    OrderEvent[]
-  purchase_orders PurchaseOrder[]
+  purchase_orders    PurchaseOrder[]
+  fulfillment_logs   FulfillmentSyncLog[]
 
   @@unique([tenant_id, channel, store_id, external_order_id])
   @@index([tenant_id])
@@ -322,6 +325,8 @@ model PurchaseOrder {
   items     PurchaseOrderItem[]
   artifacts PoArtifact[]
   events    PoEvent[]
+  tracking  ShipmentTracking[]
+  fulfillment_logs FulfillmentSyncLog[]
 
   @@index([tenant_id])
   @@index([order_id])
@@ -380,4 +385,45 @@ model PoEvent {
 
   @@index([purchase_order_id])
   @@map("po_events")
+}
+
+// ─── MODULE 5: Shipment Tracking & Fulfillment Sync ────────────
+
+model ShipmentTracking {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenant_id         String   @db.Uuid
+  purchase_order_id String   @db.Uuid
+  carrier           String?
+  tracking_code     String
+  tracking_url      String?
+  status            String   @default("REGISTERED")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  tenant         Tenant        @relation(fields: [tenant_id], references: [id])
+  purchase_order PurchaseOrder @relation(fields: [purchase_order_id], references: [id])
+
+  @@index([purchase_order_id])
+  @@index([tenant_id])
+  @@map("shipment_trackings")
+}
+
+model FulfillmentSyncLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenant_id         String   @db.Uuid
+  order_id          String   @db.Uuid
+  purchase_order_id String?  @db.Uuid
+  attempt           Int      @default(1)
+  status            String
+  error             String?
+  payload_json      Json?
+  created_at        DateTime @default(now())
+
+  tenant         Tenant         @relation(fields: [tenant_id], references: [id])
+  order          Order          @relation(fields: [order_id], references: [id])
+  purchase_order PurchaseOrder? @relation(fields: [purchase_order_id], references: [id])
+
+  @@index([order_id])
+  @@index([purchase_order_id])
+  @@map("fulfillment_sync_logs")
 }

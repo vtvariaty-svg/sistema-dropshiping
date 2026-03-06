@@ -16,10 +16,13 @@ interface OrderDetail {
     purchase_orders?: Array<{ id: string; status: string; total_cost: string; supplier: { name: string } }>;
 }
 
+interface SyncLog { id: string; attempt: number; status: string; error: string | null; created_at: string; }
+
 export default function OrderDetailPage() {
     const params = useParams();
     const orderId = params.id as string;
     const [order, setOrder] = useState<OrderDetail | null>(null);
+    const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [acting, setActing] = useState(false);
     const [message, setMessage] = useState('');
@@ -27,7 +30,13 @@ export default function OrderDetailPage() {
     useEffect(() => { loadOrder(); }, [orderId]);
 
     const loadOrder = async () => {
-        try { setOrder(await apiFetch<OrderDetail>(`/orders/${orderId}`)); } catch { } finally { setLoading(false); }
+        try {
+            const [data, logs] = await Promise.all([
+                apiFetch<OrderDetail>(`/orders/${orderId}`),
+                apiFetch<SyncLog[]>(`/orders/${orderId}/fulfillment-sync-logs`),
+            ]);
+            setOrder(data); setSyncLogs(logs);
+        } catch { } finally { setLoading(false); }
     };
 
     const handleAction = async (action: string) => {
@@ -44,12 +53,16 @@ export default function OrderDetailPage() {
     const shipping = order.addresses.find((a) => a.type === 'shipping');
     const billing = order.addresses.find((a) => a.type === 'billing');
     const opColor = (s: string | null) => {
+        if (s === 'FULFILLED') return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+        if (s === 'IN_FULFILLMENT') return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+        if (s === 'PO_CREATED') return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
         if (s === 'READY_FOR_PO') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
         if (s === 'NEEDS_MAPPING') return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-        if (s === 'PO_CREATED') return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-        if (s === 'FULFILLED') return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
         return 'bg-white/5 text-white/40 border-white/10';
     };
+
+    const statusSteps = ['NEW', 'NEEDS_MAPPING', 'READY_FOR_PO', 'PO_CREATED', 'IN_FULFILLMENT', 'FULFILLED'];
+    const currentStep = statusSteps.indexOf(order.operational_status ?? 'NEW');
 
     return (
         <div className="space-y-6">
@@ -62,12 +75,30 @@ export default function OrderDetailPage() {
                     {order.operational_status === 'READY_FOR_PO' && (
                         <button onClick={() => handleAction('create-po')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">🛒 Create Purchase Order</button>
                     )}
+                    {(order.operational_status === 'IN_FULFILLMENT' || order.operational_status === 'PO_CREATED') && (
+                        <button onClick={() => handleAction('push-fulfillment')} disabled={acting} className="btn-primary text-sm disabled:opacity-50">📡 Push Fulfillment</button>
+                    )}
                     <button onClick={() => handleAction('reconcile-mapping')} disabled={acting} className="btn-secondary text-sm disabled:opacity-50">🔍 Reconcile</button>
                     <button onClick={() => handleAction('reimport')} disabled={acting} className="text-sm px-3 py-1.5 rounded-lg bg-white/5 text-white/50 hover:bg-white/10 disabled:opacity-50">🔄 Reimport</button>
                 </div>
             </div>
 
             {message && <div className="p-3 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-300 text-sm">{message}</div>}
+
+            {/* Pipeline Progress */}
+            <div className="card">
+                <h2 className="text-sm font-semibold text-white/40 mb-3 uppercase tracking-wider">Pipeline Progress</h2>
+                <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                    {statusSteps.map((step, i) => (
+                        <div key={step} className="flex items-center">
+                            <div className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${i <= currentStep ? 'bg-brand-500/20 text-brand-300 border border-brand-500/30' : 'bg-white/5 text-white/20 border border-white/5'}`}>
+                                {step.replace(/_/g, ' ')}
+                            </div>
+                            {i < statusSteps.length - 1 && <div className={`w-4 h-px ${i < currentStep ? 'bg-brand-500/50' : 'bg-white/10'}`} />}
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             {order.operational_status === 'NEEDS_MAPPING' && (
                 <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center gap-3">
@@ -105,10 +136,29 @@ export default function OrderDetailPage() {
                             <div key={po.id} className="flex items-center justify-between py-2 border-b border-white/5">
                                 <div className="flex items-center gap-3">
                                     <span className="text-white/70 text-sm">{po.supplier.name}</span>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs ${po.status === 'DISPATCHED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>{po.status}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${['DISPATCHED', 'SHIPPED'].includes(po.status) ? 'bg-emerald-500/10 text-emerald-400' : po.status === 'CANCELLED' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>{po.status}</span>
                                     <span className="text-white/40 font-mono text-xs">{Number(po.total_cost).toFixed(2)}</span>
                                 </div>
                                 <a href={`/dashboard/ops/purchase-orders/${po.id}`} className="text-xs text-brand-400 hover:text-brand-300">View PO →</a>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Fulfillment Sync Logs */}
+            {syncLogs.length > 0 && (
+                <div className="card">
+                    <h2 className="text-lg font-semibold text-white mb-4">Fulfillment Sync Logs ({syncLogs.length})</h2>
+                    <div className="space-y-2">
+                        {syncLogs.map((log) => (
+                            <div key={log.id} className="flex items-center justify-between py-2 border-b border-white/5 text-sm">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/40 text-xs">#{log.attempt}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${log.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>{log.status}</span>
+                                    {log.error && <span className="text-red-400/60 text-xs truncate max-w-[300px]">{log.error}</span>}
+                                </div>
+                                <span className="text-white/40 text-xs">{new Date(log.created_at).toLocaleString()}</span>
                             </div>
                         ))}
                     </div>
