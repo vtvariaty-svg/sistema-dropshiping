@@ -4,6 +4,7 @@ export const listOrdersSchema = z.object({
     status: z.string().optional(),
     operational_status: z.string().optional(),
     store_id: z.string().uuid().optional(),
+    channel: z.string().optional(),
     from: z.string().optional(),
     to: z.string().optional(),
     page: z.coerce.number().int().min(1).default(1),

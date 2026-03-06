@@ -42,6 +42,9 @@ model Tenant {
   market_metrics         MarketMetric[]
   tiktok_metrics         TiktokMetric[]
   cluster_market_summaries ClusterMarketSummary[]
+  tiktok_shops             TiktokShop[]
+  tiktok_webhook_entries   TiktokWebhookEntry[]
+  tiktok_sync_logs         TiktokSyncLog[]
 
   @@map("tenants")
 }
@@ -158,6 +161,7 @@ model Order {
   tenant_id             String    @db.Uuid
   channel               String    @default("SHOPIFY")
   store_id              String?   @db.Uuid
+  tiktok_shop_id        String?   @db.Uuid
   external_order_id     String
   external_order_number String
   financial_status      String
@@ -171,11 +175,12 @@ model Order {
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
 
-  tenant    Tenant        @relation(fields: [tenant_id], references: [id])
-  store     ShopifyStore? @relation(fields: [store_id], references: [id])
-  items     OrderItem[]
-  addresses OrderAddress[]
-  events    OrderEvent[]
+  tenant         Tenant        @relation(fields: [tenant_id], references: [id])
+  store          ShopifyStore? @relation(fields: [store_id], references: [id])
+  tiktok_shop    TiktokShop?   @relation("tiktok_orders", fields: [tiktok_shop_id], references: [id])
+  items          OrderItem[]
+  addresses      OrderAddress[]
+  events         OrderEvent[]
   purchase_orders    PurchaseOrder[]
   fulfillment_logs   FulfillmentSyncLog[]
   profit             OrderProfit?
@@ -661,4 +666,71 @@ model ClusterMarketSummary {
   @@unique([tenant_id, cluster_id])
   @@index([tenant_id])
   @@map("cluster_market_summaries")
+}
+
+// ─── MODULE 9: TikTok Shop Integration ───────────────────────────
+
+model TiktokShop {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenant_id         String    @db.Uuid
+  shop_cipher       String?
+  shop_id           String?
+  shop_name         String?
+  region            String?
+  app_key           String?
+  access_token_enc  String
+  refresh_token_enc String?
+  token_expires_at  DateTime?
+  status            String    @default("ACTIVE")
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  tenant             Tenant              @relation(fields: [tenant_id], references: [id])
+  tiktok_webhooks    TiktokWebhookEntry[]
+  tiktok_sync_logs   TiktokSyncLog[]
+  orders             Order[]             @relation("tiktok_orders")
+
+  @@unique([tenant_id, shop_id])
+  @@index([tenant_id])
+  @@map("tiktok_shops")
+}
+
+model TiktokWebhookEntry {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenant_id    String    @db.Uuid
+  shop_id_ref  String?   @db.Uuid
+  event_type   String
+  event_id     String?
+  payload_raw  Json
+  received_at  DateTime  @default(now())
+  processed_at DateTime?
+  status       String    @default("RECEIVED")
+  error        String?
+  created_at   DateTime  @default(now())
+
+  tenant Tenant      @relation(fields: [tenant_id], references: [id])
+  shop   TiktokShop? @relation(fields: [shop_id_ref], references: [id])
+
+  @@index([tenant_id])
+  @@index([shop_id_ref])
+  @@index([status])
+  @@map("tiktok_webhooks")
+}
+
+model TiktokSyncLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenant_id    String   @db.Uuid
+  shop_id_ref  String?  @db.Uuid
+  sync_type    String
+  status       String
+  payload_json Json?
+  error        String?
+  created_at   DateTime @default(now())
+
+  tenant Tenant      @relation(fields: [tenant_id], references: [id])
+  shop   TiktokShop? @relation(fields: [shop_id_ref], references: [id])
+
+  @@index([tenant_id])
+  @@index([shop_id_ref])
+  @@map("tiktok_sync_logs")
 }

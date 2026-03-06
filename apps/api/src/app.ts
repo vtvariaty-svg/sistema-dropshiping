@@ -16,6 +16,7 @@ import { trackingRoutes } from './modules/tracking/tracking.routes';
 import { financeRoutes } from './modules/finance/finance.routes';
 import { intelligenceRoutes } from './modules/intelligence/intelligence.routes';
 import { marketSignalRoutes } from './modules/market-signals/market-signals.routes';
+import { tiktokIntegrationRoutes, tiktokWebhookRoutes } from './modules/tiktok/tiktok.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
@@ -45,9 +46,11 @@ export async function buildApp() {
     await app.register(financeRoutes);
     await app.register(intelligenceRoutes);
     await app.register(marketSignalRoutes);
+    await app.register(tiktokIntegrationRoutes);
 
-    // Webhook receiver (encapsulated — custom JSON parser)
+    // Webhook receivers (encapsulated — custom JSON parsers)
     await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });
+    await app.register(tiktokWebhookRoutes, { prefix: '/webhooks/tiktok-shop' });
 
     // Health check
     app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));

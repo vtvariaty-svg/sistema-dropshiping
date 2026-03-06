@@ -22,9 +22,11 @@ function getRedisOpts(): QueueOptions['connection'] | null {
 
 export const SHOPIFY_WEBHOOK_QUEUE = 'shopify-webhooks';
 export const ORDER_IMPORT_QUEUE = 'order-import';
+export const TIKTOK_WEBHOOK_QUEUE = 'tiktok-webhooks';
 
 let webhookQueue: Queue | null = null;
 let importQueue: Queue | null = null;
+let tiktokWebhookQueue: Queue | null = null;
 
 export function getRedisConnectionOpts() {
     return getRedisOpts();
@@ -46,4 +48,13 @@ export function getImportQueue(): Queue | null {
         importQueue = new Queue(ORDER_IMPORT_QUEUE, { connection: opts });
     }
     return importQueue;
+}
+
+export function getTiktokWebhookQueue(): Queue | null {
+    const opts = getRedisOpts();
+    if (!opts) return null;
+    if (!tiktokWebhookQueue) {
+        tiktokWebhookQueue = new Queue(TIKTOK_WEBHOOK_QUEUE, { connection: opts });
+    }
+    return tiktokWebhookQueue;
 }

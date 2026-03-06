@@ -3,6 +3,7 @@ import { env } from './config/env';
 import { logger } from './lib/logger';
 import { startWebhookWorker } from './workers/shopify-webhook.worker';
 import { startImportWorker } from './workers/import-order.worker';
+import { startTikTokWebhookWorker } from './workers/tiktok-webhook.worker';
 
 async function main() {
     const app = await buildApp();
@@ -21,6 +22,9 @@ async function main() {
     }
     try { startImportWorker(); } catch (err) {
         logger.warn('Import worker failed to start', { error: err instanceof Error ? err.message : '' });
+    }
+    try { startTikTokWebhookWorker(); } catch (err) {
+        logger.warn('TikTok webhook worker failed to start', { error: err instanceof Error ? err.message : '' });
     }
 }
 

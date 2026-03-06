@@ -10,7 +10,8 @@ interface SidebarProps {
 
 const navItems = [
     { label: 'Painel', href: '/dashboard', icon: '📊' },
-    { label: 'Integrações', href: '/dashboard/integrations/shopify', icon: '🔗' },
+    { label: 'Shopify', href: '/dashboard/integrations/shopify', icon: '🛍️' },
+    { label: 'TikTok Shop', href: '/dashboard/integrations/tiktok', icon: '🎵' },
     { label: 'Pedidos', href: '/dashboard/ops/orders', icon: '📦' },
     { label: 'Ordens de Compra', href: '/dashboard/ops/purchase-orders', icon: '🛒' },
     { label: 'Fornecedores', href: '/dashboard/ops/suppliers', icon: '🏭' },

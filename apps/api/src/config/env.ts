@@ -17,6 +17,12 @@ const envSchema = z.object({
     REDIS_URL: z.string().default(''),
     // Module 1: Encryption
     ENCRYPTION_KEY: z.string().default(''),
+    // Module 9: TikTok Shop
+    TIKTOK_SHOP_APP_KEY: z.string().default(''),
+    TIKTOK_SHOP_APP_SECRET: z.string().default(''),
+    TIKTOK_SHOP_APP_URL: z.string().default(''),
+    TIKTOK_SHOP_WEBHOOK_SECRET: z.string().default(''),
+    TIKTOK_SHOP_API_BASE_URL: z.string().default('https://open-api.tiktokglobalshop.com'),
 });
 
 function loadEnv() {

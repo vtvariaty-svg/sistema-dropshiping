@@ -155,6 +155,7 @@ export async function listOrders(tenantId: string, query: ListOrdersQuery) {
     if (query.status) where.financial_status = query.status;
     if (query.operational_status) where.operational_status = query.operational_status;
     if (query.store_id) where.store_id = query.store_id;
+    if (query.channel) where.channel = query.channel;
     if (query.from || query.to) {
         where.created_at = {};
         if (query.from) where.created_at.gte = new Date(query.from);
