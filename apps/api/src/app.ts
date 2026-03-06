@@ -12,6 +12,7 @@ import { orderRoutes } from './modules/orders/order.routes';
 import { supplierRoutes } from './modules/suppliers/supplier.routes';
 import { purchaseOrderRoutes } from './modules/purchase-orders/po.routes';
 import { trackingRoutes } from './modules/tracking/tracking.routes';
+import { financeRoutes } from './modules/finance/finance.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
@@ -37,6 +38,7 @@ export async function buildApp() {
     await app.register(supplierRoutes);
     await app.register(purchaseOrderRoutes);
     await app.register(trackingRoutes);
+    await app.register(financeRoutes);
 
     // Webhook receiver (encapsulated — custom JSON parser)
     await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });

@@ -17,12 +17,14 @@ interface OrderDetail {
 }
 
 interface SyncLog { id: string; attempt: number; status: string; error: string | null; created_at: string; }
+interface Profit { revenue: string; cogs: string; fees: string; shipping: string; ads_cost: string; net_profit: string; margin_percent: string; calculated_at: string; }
 
 export default function OrderDetailPage() {
     const params = useParams();
     const orderId = params.id as string;
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
+    const [profit, setProfit] = useState<Profit | null>(null);
     const [loading, setLoading] = useState(true);
     const [acting, setActing] = useState(false);
     const [message, setMessage] = useState('');
@@ -36,6 +38,7 @@ export default function OrderDetailPage() {
                 apiFetch<SyncLog[]>(`/orders/${orderId}/fulfillment-sync-logs`),
             ]);
             setOrder(data); setSyncLogs(logs);
+            try { setProfit(await apiFetch<Profit>(`/orders/${orderId}/profit`)); } catch { setProfit(null); }
         } catch { } finally { setLoading(false); }
     };
 
@@ -125,6 +128,30 @@ export default function OrderDetailPage() {
                     <div><span className="text-white/40 block">Discounts</span><span className="text-white font-mono">-{Number(order.discounts).toFixed(2)}</span></div>
                     <div><span className="text-white/40 block">Date</span><span className="text-white">{new Date(order.created_at).toLocaleString()}</span></div>
                 </div>
+            </div>
+
+            {/* Profitability */}
+            <div className="card">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-white">Profitability</h2>
+                    <button onClick={() => handleAction('recalculate-profit')} disabled={acting} className="text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50">🔄 Recalculate</button>
+                </div>
+                {profit ? (() => {
+                    const margin = Number(profit.margin_percent);
+                    const mColor = margin >= 20 ? 'text-emerald-400' : margin >= 0 ? 'text-amber-400' : 'text-red-400';
+                    return (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div><span className="text-white/40 block">Revenue</span><span className="text-white font-mono">{Number(profit.revenue).toFixed(2)}</span></div>
+                            <div><span className="text-white/40 block">COGS</span><span className="text-red-400/70 font-mono">-{Number(profit.cogs).toFixed(2)}</span></div>
+                            <div><span className="text-white/40 block">Fees</span><span className="text-orange-400/70 font-mono">-{Number(profit.fees).toFixed(2)}</span></div>
+                            <div><span className="text-white/40 block">Shipping</span><span className="text-blue-400/70 font-mono">-{Number(profit.shipping).toFixed(2)}</span></div>
+                            <div><span className="text-white/40 block">Ads Cost</span><span className="text-white/50 font-mono">-{Number(profit.ads_cost).toFixed(2)}</span></div>
+                            <div><span className="text-white/40 block">Net Profit</span><span className={`font-mono font-bold ${mColor}`}>{Number(profit.net_profit).toFixed(2)}</span></div>
+                            <div><span className="text-white/40 block">Margin</span><span className={`font-mono font-bold ${mColor}`}>{margin.toFixed(1)}%</span></div>
+                            <div><span className="text-white/40 block">Calculated</span><span className="text-white/50 text-xs">{new Date(profit.calculated_at).toLocaleString()}</span></div>
+                        </div>
+                    );
+                })() : <p className="text-white/30 text-sm">No profit data. Click Recalculate.</p>}
             </div>
 
             {/* Purchase Orders */}

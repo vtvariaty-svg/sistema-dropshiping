@@ -31,6 +31,9 @@ model Tenant {
   po_events          PoEvent[]
   shipment_trackings ShipmentTracking[]
   fulfillment_logs   FulfillmentSyncLog[]
+  fee_profiles       FeeProfile[]
+  shipping_profiles  ShippingProfile[]
+  order_profits      OrderProfit[]
 
   @@map("tenants")
 }
@@ -167,6 +170,7 @@ model Order {
   events    OrderEvent[]
   purchase_orders    PurchaseOrder[]
   fulfillment_logs   FulfillmentSyncLog[]
+  profit             OrderProfit?
 
   @@unique([tenant_id, channel, store_id, external_order_id])
   @@index([tenant_id])
@@ -426,4 +430,63 @@ model FulfillmentSyncLog {
   @@index([order_id])
   @@index([purchase_order_id])
   @@map("fulfillment_sync_logs")
+}
+
+// ─── MODULE 6: Financial Profitability ───────────────────────
+
+model FeeProfile {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenant_id           String   @db.Uuid
+  channel             String
+  fee_percent         Decimal  @db.Decimal(6, 4)
+  payment_fee_percent Decimal  @db.Decimal(6, 4)
+  fixed_fee           Decimal  @db.Decimal(12, 2)
+  active              Boolean  @default(true)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+
+  @@index([tenant_id])
+  @@map("fee_profiles")
+}
+
+model ShippingProfile {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenant_id         String   @db.Uuid
+  name              String
+  rule_type         String   @default("flat")
+  rule_json         Json?
+  avg_shipping_cost Decimal  @db.Decimal(12, 2)
+  active            Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+
+  @@index([tenant_id])
+  @@map("shipping_profiles")
+}
+
+model OrderProfit {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenant_id      String   @db.Uuid
+  order_id       String   @db.Uuid
+  revenue        Decimal  @db.Decimal(12, 2)
+  cogs           Decimal  @db.Decimal(12, 2)
+  fees           Decimal  @db.Decimal(12, 2)
+  shipping       Decimal  @db.Decimal(12, 2)
+  ads_cost       Decimal  @db.Decimal(12, 2) @default(0)
+  net_profit     Decimal  @db.Decimal(12, 2)
+  margin_percent Decimal  @db.Decimal(8, 4)
+  calculated_at  DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  order  Order  @relation(fields: [order_id], references: [id])
+
+  @@unique([tenant_id, order_id])
+  @@index([tenant_id])
+  @@index([order_id])
+  @@map("order_profits")
 }

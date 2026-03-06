@@ -16,6 +16,9 @@ const navItems = [
     { label: 'Suppliers', href: '/dashboard/ops/suppliers', icon: '🏭' },
     { label: 'Products', href: '/dashboard/ops/supplier-products', icon: '🏷️' },
     { label: 'SKU Mappings', href: '/dashboard/ops/sku-mappings', icon: '🔀' },
+    { label: 'Profit Analytics', href: '/dashboard/analytics/profit', icon: '💰' },
+    { label: 'Fee Settings', href: '/dashboard/settings/fees', icon: '⚙️' },
+    { label: 'Shipping Settings', href: '/dashboard/settings/shipping', icon: '🚚' },
     { label: 'Intelligence', href: '#', icon: '🧠', soon: true },
 ];
 
