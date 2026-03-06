@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { IncomingMessage } from 'http';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../../config/env';
 import { verifyWebhookHmac } from '../../lib/shopify';
@@ -12,8 +13,8 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     fastify.addContentTypeParser(
         'application/json',
         { parseAs: 'buffer' },
-        (_req: FastifyRequest, body: Buffer, done: (err: Error | null, result?: unknown) => void) => {
-            (_req as Record<string, unknown>).rawBody = body;
+        function (req: IncomingMessage, body: Buffer, done: (err: Error | null, result?: unknown) => void) {
+            (req as IncomingMessage & { rawBody?: Buffer }).rawBody = body;
             try {
                 done(null, JSON.parse(body.toString()));
             } catch (err) {
@@ -28,7 +29,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
         const hmac = request.headers['x-shopify-hmac-sha256'] as string | undefined;
         const topic = (request.headers['x-shopify-topic'] as string) || 'unknown';
         const shopifyWebhookId = (request.headers['x-shopify-webhook-id'] as string) || uuidv4();
-        const rawBody = request.rawBody;
+        const rawBody = (request.raw as IncomingMessage & { rawBody?: Buffer }).rawBody;
 
         if (!hmac || !rawBody) {
             return reply.code(401).send({ error: 'Missing HMAC' });
