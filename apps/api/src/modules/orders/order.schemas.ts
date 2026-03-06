@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const listOrdersSchema = z.object({
     status: z.string().optional(),
+    operational_status: z.string().optional(),
     store_id: z.string().uuid().optional(),
     from: z.string().optional(),
     to: z.string().optional(),

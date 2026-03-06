@@ -4,6 +4,7 @@ import { decrypt } from '../../lib/encryption';
 import { env } from '../../config/env';
 import { fetchShopifyOrder } from '../../lib/shopify';
 import { logger } from '../../lib/logger';
+import { reconcileOrderMappingStatus } from '../../services/reconciliation';
 import type { ListOrdersQuery } from './order.schemas';
 
 // ─── Shopify → Internal normalization ────────────────────────────
@@ -140,6 +141,9 @@ export async function importShopifyOrder(params: {
         });
     }
 
+    // Reconcile mapping status
+    await reconcileOrderMappingStatus(order.id, params.tenantId);
+
     logger.info('Order imported', { orderId: order.id, external: params.externalOrderId });
     return order;
 }
@@ -149,6 +153,7 @@ export async function importShopifyOrder(params: {
 export async function listOrders(tenantId: string, query: ListOrdersQuery) {
     const where: Prisma.OrderWhereInput = { tenant_id: tenantId };
     if (query.status) where.financial_status = query.status;
+    if (query.operational_status) where.operational_status = query.operational_status;
     if (query.store_id) where.store_id = query.store_id;
     if (query.from || query.to) {
         where.created_at = {};
@@ -161,8 +166,8 @@ export async function listOrders(tenantId: string, query: ListOrdersQuery) {
             skip: (query.page - 1) * query.page_size, take: query.page_size,
             select: {
                 id: true, external_order_number: true, channel: true, store_id: true,
-                financial_status: true, fulfillment_status: true, total: true,
-                currency: true, created_at: true,
+                financial_status: true, fulfillment_status: true, operational_status: true,
+                total: true, currency: true, created_at: true,
             },
         }),
         prisma.order.count({ where }),

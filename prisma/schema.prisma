@@ -13,15 +13,18 @@ model Tenant {
   plan       String   @default("free")
   created_at DateTime @default(now())
 
-  users            User[]
-  audit_logs       AuditLog[]
-  shopify_stores   ShopifyStore[]
-  shopify_webhooks ShopifyWebhook[]
-  dead_letter_jobs DeadLetterJob[]
-  orders           Order[]
-  order_items      OrderItem[]
-  order_addresses  OrderAddress[]
-  order_events     OrderEvent[]
+  users             User[]
+  audit_logs        AuditLog[]
+  shopify_stores    ShopifyStore[]
+  shopify_webhooks  ShopifyWebhook[]
+  dead_letter_jobs  DeadLetterJob[]
+  orders            Order[]
+  order_items       OrderItem[]
+  order_addresses   OrderAddress[]
+  order_events      OrderEvent[]
+  suppliers         Supplier[]
+  supplier_products SupplierProduct[]
+  sku_mappings      SkuMapping[]
 
   @@map("tenants")
 }
@@ -88,6 +91,7 @@ model ShopifyStore {
   tenant   Tenant           @relation(fields: [tenant_id], references: [id])
   webhooks ShopifyWebhook[]
   orders   Order[]
+  sku_mappings SkuMapping[]
 
   @@unique([tenant_id, shop_domain])
   @@index([tenant_id])
@@ -141,6 +145,7 @@ model Order {
   external_order_number String
   financial_status      String
   fulfillment_status    String?
+  operational_status    String?   @default("NEW")
   currency              String
   subtotal              Decimal   @db.Decimal(12, 2)
   shipping              Decimal   @db.Decimal(12, 2)
@@ -157,6 +162,7 @@ model Order {
 
   @@unique([tenant_id, channel, store_id, external_order_id])
   @@index([tenant_id])
+  @@index([operational_status])
   @@map("orders")
 }
 
@@ -215,4 +221,74 @@ model OrderEvent {
   @@index([tenant_id])
   @@index([order_id])
   @@map("order_events")
+}
+
+// ─── MODULE 3: Suppliers & SKU Mapping ───────────────────────────
+
+model Supplier {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenant_id     String   @db.Uuid
+  name          String
+  contact_email String?
+  contact_name  String?
+  phone         String?
+  notes         String?
+  status        String   @default("active")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  tenant   Tenant            @relation(fields: [tenant_id], references: [id])
+  products SupplierProduct[]
+  mappings SkuMapping[]
+
+  @@index([tenant_id])
+  @@map("suppliers")
+}
+
+model SupplierProduct {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenant_id      String   @db.Uuid
+  supplier_id    String   @db.Uuid
+  supplier_sku   String
+  name           String
+  cost           Decimal  @db.Decimal(12, 2)
+  currency       String   @default("USD")
+  stock_hint     Int?
+  lead_time_days Int?
+  source_url     String?
+  active         Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  tenant   Tenant      @relation(fields: [tenant_id], references: [id])
+  supplier Supplier    @relation(fields: [supplier_id], references: [id])
+  mappings SkuMapping[]
+
+  @@unique([tenant_id, supplier_id, supplier_sku])
+  @@index([tenant_id])
+  @@index([supplier_id])
+  @@map("supplier_products")
+}
+
+model SkuMapping {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenant_id           String   @db.Uuid
+  channel             String   @default("SHOPIFY")
+  store_id            String?  @db.Uuid
+  shopify_sku         String?
+  shopify_variant_id  String?
+  supplier_id         String   @db.Uuid
+  supplier_product_id String   @db.Uuid
+  active              Boolean  @default(true)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenant_id], references: [id])
+  store           ShopifyStore?    @relation(fields: [store_id], references: [id])
+  supplier        Supplier         @relation(fields: [supplier_id], references: [id])
+  supplier_product SupplierProduct @relation(fields: [supplier_product_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([supplier_id])
+  @@map("sku_mappings")
 }

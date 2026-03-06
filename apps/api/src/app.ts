@@ -9,6 +9,7 @@ import { adminRoutes } from './modules/admin/admin.routes';
 import { shopifyRoutes } from './modules/shopify/shopify.routes';
 import { webhookRoutes, webhookRetryRoutes } from './modules/shopify/webhook.routes';
 import { orderRoutes } from './modules/orders/order.routes';
+import { supplierRoutes } from './modules/suppliers/supplier.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
@@ -31,6 +32,7 @@ export async function buildApp() {
     await app.register(shopifyRoutes);
     await app.register(webhookRetryRoutes);
     await app.register(orderRoutes);
+    await app.register(supplierRoutes);
 
     // Webhook receiver (encapsulated — custom JSON parser)
     await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });
