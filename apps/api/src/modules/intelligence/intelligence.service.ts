@@ -191,9 +191,31 @@ export async function computeProductScore(tenantId: string, clusterId: string) {
     const metrics = await computeClusterMetrics(tenantId, clusterId);
 
     const marginScore = calcMarginScore(metrics.avgMargin);
-    const demandScore = calcDemandScore(metrics.orderCount);
-    const competitionScore = 50; // neutral placeholder v1
-    const viralScore = 50;       // neutral placeholder v1
+    let demandScore = calcDemandScore(metrics.orderCount);
+    let competitionScore = 50; // neutral placeholder
+    let viralScore = 50;       // neutral placeholder
+    let version = 'v1';
+
+    // v2: Blend with external market summary if available
+    const externalSummary = await prisma.clusterMarketSummary.findFirst({
+        where: { tenant_id: tenantId, cluster_id: clusterId },
+    });
+
+    if (externalSummary) {
+        version = 'v2';
+        // Blend demand: 60% internal + 40% external
+        if (externalSummary.external_demand_score != null) {
+            demandScore = Math.round(demandScore * 0.6 + Number(externalSummary.external_demand_score) * 0.4);
+        }
+        // External competition replaces placeholder when available
+        if (externalSummary.external_competition_score != null) {
+            competitionScore = Number(externalSummary.external_competition_score);
+        }
+        // External viral replaces placeholder when available
+        if (externalSummary.external_viral_score != null) {
+            viralScore = Number(externalSummary.external_viral_score);
+        }
+    }
 
     const finalScore =
         marginScore * SCORE_WEIGHTS.margin +
@@ -215,7 +237,7 @@ export async function computeProductScore(tenantId: string, clusterId: string) {
             viral_score: new Prisma.Decimal(viralScore),
             final_score: new Prisma.Decimal(finalScore),
             recommendation,
-            score_version: SCORE_VERSION,
+            score_version: version,
             calculated_at: new Date(),
         },
         update: {
@@ -225,12 +247,12 @@ export async function computeProductScore(tenantId: string, clusterId: string) {
             viral_score: new Prisma.Decimal(viralScore),
             final_score: new Prisma.Decimal(finalScore),
             recommendation,
-            score_version: SCORE_VERSION,
+            score_version: version,
             calculated_at: new Date(),
         },
     });
 
-    logger.info('Cluster score computed', { clusterId, tenantId, finalScore, recommendation });
+    logger.info('Cluster score computed', { clusterId, tenantId, finalScore, recommendation, version });
     return { ...result, metrics };
 }
 

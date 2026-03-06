@@ -22,6 +22,7 @@ const navItems = [
     { label: 'Products', href: '/dashboard/intelligence/products', icon: '📋' },
     { label: 'Clusters', href: '/dashboard/intelligence/clusters', icon: '🧩' },
     { label: 'Ranking', href: '/dashboard/intelligence/ranking', icon: '🏆' },
+    { label: 'Market Signals', href: '/dashboard/intelligence/market-signals', icon: '📡' },
 ];
 
 export function Sidebar({ user, open, onClose }: SidebarProps) {

@@ -31,13 +31,17 @@ model Tenant {
   po_events          PoEvent[]
   shipment_trackings ShipmentTracking[]
   fulfillment_logs   FulfillmentSyncLog[]
-  fee_profiles       FeeProfile[]
-  shipping_profiles  ShippingProfile[]
-  order_profits      OrderProfit[]
-  products           Product[]
-  product_clusters   ProductCluster[]
-  cluster_links      ClusterLink[]
-  product_scores     ProductScore[]
+  fee_profiles           FeeProfile[]
+  shipping_profiles      ShippingProfile[]
+  order_profits          OrderProfit[]
+  products               Product[]
+  product_clusters       ProductCluster[]
+  cluster_links          ClusterLink[]
+  product_scores         ProductScore[]
+  market_signal_jobs     MarketSignalJob[]
+  market_metrics         MarketMetric[]
+  tiktok_metrics         TiktokMetric[]
+  cluster_market_summaries ClusterMarketSummary[]
 
   @@map("tenants")
 }
@@ -520,9 +524,13 @@ model ProductCluster {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  tenant        Tenant         @relation(fields: [tenant_id], references: [id])
-  cluster_links ClusterLink[]
-  score         ProductScore?
+  tenant             Tenant              @relation(fields: [tenant_id], references: [id])
+  cluster_links      ClusterLink[]
+  score              ProductScore?
+  market_signal_jobs MarketSignalJob[]
+  market_metrics     MarketMetric[]
+  tiktok_metrics     TiktokMetric[]
+  market_summary     ClusterMarketSummary?
 
   @@unique([tenant_id, fingerprint])
   @@index([tenant_id])
@@ -567,4 +575,90 @@ model ProductScore {
   @@index([tenant_id])
   @@index([cluster_id])
   @@map("product_scores")
+}
+
+// ─── MODULE 8: Market Signal Ingestion ───────────────────────────
+
+model MarketSignalJob {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenant_id   String    @db.Uuid
+  cluster_id  String?   @db.Uuid
+  source      String
+  query       String
+  status      String    @default("QUEUED")
+  attempts    Int       @default(0)
+  started_at  DateTime?
+  finished_at DateTime?
+  error       String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  tenant  Tenant          @relation(fields: [tenant_id], references: [id])
+  cluster ProductCluster? @relation(fields: [cluster_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([cluster_id])
+  @@index([status])
+  @@map("market_signal_jobs")
+}
+
+model MarketMetric {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenant_id     String    @db.Uuid
+  cluster_id    String    @db.Uuid
+  source        String
+  query         String
+  price_avg     Decimal?  @db.Decimal(12, 2)
+  sales_est     Decimal?  @db.Decimal(12, 2)
+  sellers_count Int?
+  rating_avg    Decimal?  @db.Decimal(4, 2)
+  reviews_count Int?
+  snapshot_at   DateTime  @default(now())
+  created_at    DateTime  @default(now())
+
+  tenant  Tenant         @relation(fields: [tenant_id], references: [id])
+  cluster ProductCluster @relation(fields: [cluster_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([cluster_id])
+  @@map("market_metrics")
+}
+
+model TiktokMetric {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenant_id   String    @db.Uuid
+  cluster_id  String    @db.Uuid
+  query       String
+  videos_count Int?
+  views_total Decimal?  @db.Decimal(16, 0)
+  likes_avg   Decimal?  @db.Decimal(12, 2)
+  growth_rate Decimal?  @db.Decimal(8, 4)
+  snapshot_at DateTime  @default(now())
+  created_at  DateTime  @default(now())
+
+  tenant  Tenant         @relation(fields: [tenant_id], references: [id])
+  cluster ProductCluster @relation(fields: [cluster_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([cluster_id])
+  @@map("tiktok_metrics")
+}
+
+model ClusterMarketSummary {
+  id                       String   @id @default(uuid()) @db.Uuid
+  tenant_id                String   @db.Uuid
+  cluster_id               String   @unique @db.Uuid
+  external_demand_score    Decimal? @db.Decimal(8, 4)
+  external_competition_score Decimal? @db.Decimal(8, 4)
+  external_viral_score     Decimal? @db.Decimal(8, 4)
+  summary_version          String   @default("v1")
+  calculated_at            DateTime @default(now())
+  updated_at               DateTime @updatedAt
+
+  tenant  Tenant         @relation(fields: [tenant_id], references: [id])
+  cluster ProductCluster @relation(fields: [cluster_id], references: [id])
+
+  @@unique([tenant_id, cluster_id])
+  @@index([tenant_id])
+  @@map("cluster_market_summaries")
 }

@@ -11,20 +11,41 @@ interface ClusterDetail {
     metrics: { orderCount: number; totalQty: number; revenue: number; avgMargin: number };
 }
 
+interface MarketSummary {
+    summary: { external_demand_score: string | null; external_competition_score: string | null; external_viral_score: string | null; summary_version: string; calculated_at: string } | null;
+    latestShopee: { price_avg: string | null; sales_est: string | null; sellers_count: number | null; rating_avg: string | null; reviews_count: number | null; snapshot_at: string } | null;
+    latestTiktok: { videos_count: number | null; views_total: string | null; likes_avg: string | null; growth_rate: string | null; snapshot_at: string } | null;
+}
+
 export default function ClusterDetailPage() {
     const params = useParams();
     const clusterId = params.id as string;
     const [cluster, setCluster] = useState<ClusterDetail | null>(null);
+    const [market, setMarket] = useState<MarketSummary | null>(null);
     const [loading, setLoading] = useState(true);
     const [recomputing, setRecomputing] = useState(false);
+    const [collecting, setCollecting] = useState('');
 
     useEffect(() => { load(); }, [clusterId]);
-    const load = async () => { try { setCluster(await apiFetch(`/intelligence/clusters/${clusterId}`)); } catch { } finally { setLoading(false); } };
-
-    const recompute = async () => {
-        setRecomputing(true);
-        try { await apiFetch(`/intelligence/clusters/${clusterId}/recompute`, { method: 'POST' }); load(); } catch { } finally { setRecomputing(false); }
+    const load = async () => {
+        try {
+            const [c, m] = await Promise.all([
+                apiFetch<ClusterDetail>(`/intelligence/clusters/${clusterId}`),
+                apiFetch<MarketSummary>(`/market-signals/clusters/${clusterId}/summary`),
+            ]);
+            setCluster(c); setMarket(m);
+        } catch { } finally { setLoading(false); }
     };
+
+    const recompute = async () => { setRecomputing(true); try { await apiFetch(`/intelligence/clusters/${clusterId}/recompute`, { method: 'POST' }); load(); } catch { } finally { setRecomputing(false); } };
+
+    const collectSignals = async (source: string) => {
+        setCollecting(source);
+        try { await apiFetch('/market-signals/collect', { method: 'POST', body: JSON.stringify({ cluster_id: clusterId, source }) }); load(); } catch { } finally { setCollecting(''); }
+    };
+
+    const recomputeSummary = async () => { try { await apiFetch(`/market-signals/clusters/${clusterId}/recompute-summary`, { method: 'POST' }); load(); } catch { } };
+    const recomputeScore = async () => { try { await apiFetch(`/market-signals/clusters/${clusterId}/recompute-score`, { method: 'POST' }); load(); } catch { } };
 
     const recColor = (r: string) => {
         if (r === 'SCALE') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
@@ -36,6 +57,10 @@ export default function ClusterDetailPage() {
     if (loading) return <div className="text-white/30">Loading...</div>;
     if (!cluster) return <div className="text-red-400">Cluster not found</div>;
 
+    const s = market?.summary;
+    const sh = market?.latestShopee;
+    const tk = market?.latestTiktok;
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -44,10 +69,14 @@ export default function ClusterDetailPage() {
                     <h1 className="text-2xl lg:text-3xl font-bold text-white mt-1">{cluster.name_norm}</h1>
                     <p className="text-white/30 text-xs font-mono mt-1">#{cluster.fingerprint}</p>
                 </div>
-                <button onClick={recompute} disabled={recomputing} className="btn-primary text-sm">{recomputing ? 'Computing...' : '🔄 Recompute'}</button>
+                <div className="flex gap-2">
+                    <button onClick={() => collectSignals('SHOPEE')} disabled={!!collecting} className="btn-primary text-xs">{collecting === 'SHOPEE' ? '...' : '📡 Shopee'}</button>
+                    <button onClick={() => collectSignals('TIKTOK')} disabled={!!collecting} className="btn-primary text-xs">{collecting === 'TIKTOK' ? '...' : '🎵 TikTok'}</button>
+                    <button onClick={recompute} disabled={recomputing} className="btn-primary text-xs">{recomputing ? '...' : '🔄 Score'}</button>
+                </div>
             </div>
 
-            {/* Metrics */}
+            {/* Internal Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="card text-center"><p className="text-white/40 text-xs">Orders</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.orderCount}</p></div>
                 <div className="card text-center"><p className="text-white/40 text-xs">Total Qty</p><p className="text-2xl font-bold text-white mt-1">{cluster.metrics.totalQty}</p></div>
@@ -74,6 +103,54 @@ export default function ClusterDetailPage() {
             ) : (
                 <div className="card"><p className="text-white/30 text-sm">No score yet. Click Recompute.</p></div>
             )}
+
+            {/* External Market Summary */}
+            <div className="card">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-white">📊 External Market Summary</h2>
+                    <div className="flex gap-2">
+                        <button onClick={recomputeSummary} className="text-xs text-brand-400 hover:text-brand-300">Recompute Summary</button>
+                        <button onClick={recomputeScore} className="text-xs text-purple-400 hover:text-purple-300">Recompute Full Score</button>
+                    </div>
+                </div>
+                {s ? (
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div><span className="text-white/40 block">Ext. Demand</span><span className="text-white font-mono font-bold">{s.external_demand_score != null ? Number(s.external_demand_score).toFixed(1) : '—'}</span></div>
+                        <div><span className="text-white/40 block">Ext. Competition</span><span className="text-white font-mono font-bold">{s.external_competition_score != null ? Number(s.external_competition_score).toFixed(1) : '—'}</span></div>
+                        <div><span className="text-white/40 block">Ext. Viral</span><span className="text-white font-mono font-bold">{s.external_viral_score != null ? Number(s.external_viral_score).toFixed(1) : '—'}</span></div>
+                    </div>
+                ) : <p className="text-white/30 text-sm">No external summary. Collect signals first.</p>}
+            </div>
+
+            {/* Latest Shopee */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="card">
+                    <h2 className="text-base font-semibold text-white mb-3">🛒 Latest Shopee</h2>
+                    {sh ? (
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div><span className="text-white/40 block text-xs">Avg Price</span><span className="text-white font-mono">{sh.price_avg ? Number(sh.price_avg).toFixed(2) : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Sales Est.</span><span className="text-white font-mono">{sh.sales_est ? Number(sh.sales_est).toFixed(0) : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Sellers</span><span className="text-white font-mono">{sh.sellers_count ?? '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Rating</span><span className="text-white font-mono">{sh.rating_avg ? `⭐ ${Number(sh.rating_avg).toFixed(1)}` : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Reviews</span><span className="text-white font-mono">{sh.reviews_count ?? '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Collected</span><span className="text-white/30 text-xs">{new Date(sh.snapshot_at).toLocaleString()}</span></div>
+                        </div>
+                    ) : <p className="text-white/30 text-sm">No Shopee data collected.</p>}
+                </div>
+
+                <div className="card">
+                    <h2 className="text-base font-semibold text-white mb-3">🎵 Latest TikTok</h2>
+                    {tk ? (
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div><span className="text-white/40 block text-xs">Videos</span><span className="text-white font-mono">{tk.videos_count ?? '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Total Views</span><span className="text-white font-mono">{tk.views_total ? Number(tk.views_total).toLocaleString() : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Avg Likes</span><span className="text-white font-mono">{tk.likes_avg ? Number(tk.likes_avg).toLocaleString() : '—'}</span></div>
+                            <div><span className="text-white/40 block text-xs">Growth Rate</span><span className={`font-mono ${Number(tk.growth_rate ?? 0) > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{tk.growth_rate ? `${Number(tk.growth_rate).toFixed(1)}%` : '—'}</span></div>
+                            <div className="col-span-2"><span className="text-white/40 block text-xs">Collected</span><span className="text-white/30 text-xs">{new Date(tk.snapshot_at).toLocaleString()}</span></div>
+                        </div>
+                    ) : <p className="text-white/30 text-sm">No TikTok data collected.</p>}
+                </div>
+            </div>
 
             {/* Linked Products */}
             <div className="card">
