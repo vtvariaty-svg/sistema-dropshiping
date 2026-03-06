@@ -154,7 +154,7 @@ export async function syncShopifyFulfillment(tenantId: string, orderId: string, 
                         purchase_order: { connect: { id: po.id } },
                         attempt: prevAttempts + 1,
                         status: 'SUCCESS',
-                        payload_json: { response: body },
+                        payload_json: JSON.parse(JSON.stringify({ response: body })),
                     },
                 });
                 results.push({ poId: po.id, status: 'SUCCESS' });
@@ -174,7 +174,7 @@ export async function syncShopifyFulfillment(tenantId: string, orderId: string, 
                         attempt: prevAttempts + 1,
                         status: 'FAILED',
                         error: errorMsg,
-                        payload_json: { response: body },
+                        payload_json: JSON.parse(JSON.stringify({ response: body })),
                     },
                 });
                 results.push({ poId: po.id, status: 'FAILED', error: errorMsg });
