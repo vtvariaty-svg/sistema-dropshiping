@@ -8,10 +8,18 @@ import {
     AuthError,
 } from './auth.service';
 import { authenticate } from '../../middleware/authenticate';
-import { env } from '../../config/env';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
 const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
+
+function getCookieOptions() {
+    return {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none' as const,
+        path: '/',
+    };
+}
 
 export async function authRoutes(fastify: FastifyInstance) {
     // POST /auth/login
@@ -28,10 +36,7 @@ export async function authRoutes(fastify: FastifyInstance) {
             const result = await loginUser(parsed.data.email, parsed.data.password, request.traceId);
 
             reply.setCookie(REFRESH_COOKIE_NAME, result.refreshToken, {
-                httpOnly: true,
-                secure: env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/',
+                ...getCookieOptions(),
                 maxAge: REFRESH_COOKIE_MAX_AGE,
             });
 
@@ -58,10 +63,7 @@ export async function authRoutes(fastify: FastifyInstance) {
             const result = await refreshAccessToken(rawRefreshToken, request.traceId);
 
             reply.setCookie(REFRESH_COOKIE_NAME, result.refreshToken, {
-                httpOnly: true,
-                secure: env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/',
+                ...getCookieOptions(),
                 maxAge: REFRESH_COOKIE_MAX_AGE,
             });
 
@@ -86,12 +88,7 @@ export async function authRoutes(fastify: FastifyInstance) {
                 await logoutUser(rawRefreshToken, user.userId, user.tenantId, request.traceId);
             }
 
-            reply.clearCookie(REFRESH_COOKIE_NAME, {
-                httpOnly: true,
-                secure: env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                path: '/',
-            });
+            reply.clearCookie(REFRESH_COOKIE_NAME, getCookieOptions());
 
             return reply.code(200).send({ message: 'Logged out' });
         },

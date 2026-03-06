@@ -15,8 +15,10 @@ export async function buildApp() {
 
     // --- Plugins ---
     await app.register(cors, {
-        origin: env.WEB_BASE_URL,
+        origin: [env.WEB_BASE_URL],
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Trace-Id'],
     });
 
     await app.register(cookie, {

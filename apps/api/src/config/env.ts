@@ -5,10 +5,12 @@ const envSchema = z.object({
     JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 chars'),
     JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 chars'),
     COOKIE_SECRET: z.string().min(32, 'COOKIE_SECRET must be at least 32 chars'),
-    APP_BASE_URL: z.string().url('APP_BASE_URL must be a valid URL'),
-    WEB_BASE_URL: z.string().url('WEB_BASE_URL must be a valid URL'),
     PORT: z.coerce.number().default(3001),
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
+    // Render provides RENDER_EXTERNAL_URL automatically
+    RENDER_EXTERNAL_URL: z.string().optional(),
+    // WEB_BASE_URL for CORS — required in production
+    WEB_BASE_URL: z.string().min(1, 'WEB_BASE_URL is required'),
 });
 
 function loadEnv() {
@@ -20,8 +22,14 @@ function loadEnv() {
         );
         process.exit(1);
     }
-    return parsed.data;
+
+    const data = parsed.data;
+
+    return {
+        ...data,
+        APP_BASE_URL: data.RENDER_EXTERNAL_URL || `http://0.0.0.0:${data.PORT}`,
+    };
 }
 
 export const env = loadEnv();
-export type Env = z.infer<typeof envSchema>;
+export type Env = ReturnType<typeof loadEnv>;
