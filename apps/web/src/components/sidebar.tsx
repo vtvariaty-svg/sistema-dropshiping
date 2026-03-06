@@ -9,20 +9,20 @@ interface SidebarProps {
 }
 
 const navItems = [
-    { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-    { label: 'Integrations', href: '/dashboard/integrations/shopify', icon: '🔗' },
-    { label: 'Orders', href: '/dashboard/ops/orders', icon: '📦' },
-    { label: 'Purchase Orders', href: '/dashboard/ops/purchase-orders', icon: '🛒' },
-    { label: 'Suppliers', href: '/dashboard/ops/suppliers', icon: '🏭' },
-    { label: 'Products', href: '/dashboard/ops/supplier-products', icon: '🏷️' },
-    { label: 'SKU Mappings', href: '/dashboard/ops/sku-mappings', icon: '🔀' },
-    { label: 'Profit Analytics', href: '/dashboard/analytics/profit', icon: '💰' },
-    { label: 'Fee Settings', href: '/dashboard/settings/fees', icon: '⚙️' },
-    { label: 'Shipping Settings', href: '/dashboard/settings/shipping', icon: '🚚' },
-    { label: 'Products', href: '/dashboard/intelligence/products', icon: '📋' },
+    { label: 'Painel', href: '/dashboard', icon: '📊' },
+    { label: 'Integrações', href: '/dashboard/integrations/shopify', icon: '🔗' },
+    { label: 'Pedidos', href: '/dashboard/ops/orders', icon: '📦' },
+    { label: 'Ordens de Compra', href: '/dashboard/ops/purchase-orders', icon: '🛒' },
+    { label: 'Fornecedores', href: '/dashboard/ops/suppliers', icon: '🏭' },
+    { label: 'Produtos Fornec.', href: '/dashboard/ops/supplier-products', icon: '🏷️' },
+    { label: 'Mapeamento SKU', href: '/dashboard/ops/sku-mappings', icon: '🔀' },
+    { label: 'Análise de Lucro', href: '/dashboard/analytics/profit', icon: '💰' },
+    { label: 'Config. Taxas', href: '/dashboard/settings/fees', icon: '⚙️' },
+    { label: 'Config. Frete', href: '/dashboard/settings/shipping', icon: '🚚' },
+    { label: 'Produtos Intel.', href: '/dashboard/intelligence/products', icon: '📋' },
     { label: 'Clusters', href: '/dashboard/intelligence/clusters', icon: '🧩' },
     { label: 'Ranking', href: '/dashboard/intelligence/ranking', icon: '🏆' },
-    { label: 'Market Signals', href: '/dashboard/intelligence/market-signals', icon: '📡' },
+    { label: 'Sinais de Mercado', href: '/dashboard/intelligence/market-signals', icon: '📡' },
 ];
 
 export function Sidebar({ user, open, onClose }: SidebarProps) {
@@ -77,6 +77,19 @@ export function Sidebar({ user, open, onClose }: SidebarProps) {
                             <span>{item.label}</span>
                         </a>
                     ))}
+                    {user.role === 'admin' && (
+                        <a
+                            href="/dashboard/settings/users"
+                            className={`
+                                flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                                transition-all duration-150
+                                text-white/50 hover:text-white/80 hover:bg-white/5
+                            `}
+                        >
+                            <span className="text-lg">👥</span>
+                            <span>Usuários</span>
+                        </a>
+                    )}
                 </nav>
 
                 {/* User info at bottom */}

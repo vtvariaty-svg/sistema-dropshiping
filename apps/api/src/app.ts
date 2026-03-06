@@ -6,6 +6,7 @@ import traceIdPlugin from './plugins/trace-id';
 import requestLoggerPlugin from './plugins/request-logger';
 import { authRoutes } from './modules/auth/auth.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { userRoutes } from './modules/users/users.routes';
 import { shopifyRoutes } from './modules/shopify/shopify.routes';
 import { webhookRoutes, webhookRetryRoutes } from './modules/shopify/webhook.routes';
 import { orderRoutes } from './modules/orders/order.routes';
@@ -34,6 +35,7 @@ export async function buildApp() {
     // Routes
     await app.register(authRoutes);
     await app.register(adminRoutes);
+    await app.register(userRoutes);
     await app.register(shopifyRoutes);
     await app.register(webhookRetryRoutes);
     await app.register(orderRoutes);

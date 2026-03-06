@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const prisma = new PrismaClient();
 
@@ -52,6 +54,23 @@ async function main() {
         },
     });
     console.log(`✅ Operator user created: ${operator.email}`);
+
+    const vtvariaty = await prisma.user.upsert({
+        where: {
+            tenant_id_email: {
+                tenant_id: tenant.id,
+                email: 'vtvariaty@gmail.com',
+            },
+        },
+        update: {},
+        create: {
+            tenant_id: tenant.id,
+            email: 'vtvariaty@gmail.com',
+            password_hash: await bcrypt.hash('admin123', 12),
+            role: 'admin',
+        },
+    });
+    console.log(`✅ VTVariaty user created: ${vtvariaty.email}`);
 
     console.log('🌱 Seed complete!');
 }
