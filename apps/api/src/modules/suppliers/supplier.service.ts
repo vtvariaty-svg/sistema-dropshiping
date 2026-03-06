@@ -105,11 +105,12 @@ export async function getMapping(id: string, tenantId: string) {
 }
 
 export async function createMappingRaw(tenantId: string, data: Record<string, unknown>) {
+    const storeId = data.store_id as string | null | undefined;
     const mapping = await prisma.skuMapping.create({
         data: {
             tenant: { connect: { id: tenantId } },
             channel: (data.channel as string) ?? 'SHOPIFY',
-            store_id: (data.store_id as string) ?? null,
+            ...(storeId ? { store: { connect: { id: storeId } } } : {}),
             shopify_sku: (data.shopify_sku as string) ?? null,
             shopify_variant_id: (data.shopify_variant_id as string) ?? null,
             supplier: { connect: { id: data.supplier_id as string } },
