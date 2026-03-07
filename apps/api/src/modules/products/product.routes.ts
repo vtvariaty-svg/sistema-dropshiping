@@ -33,6 +33,15 @@ export async function productRoutes(fastify: FastifyInstance) {
         if (!body.title || !body.price) {
             return reply.code(400).send({ error: 'Title and price are required' });
         }
+
+        // Sanitize prices (replace comma with dot, handle empty strings)
+        body.price = body.price.replace(',', '.');
+        if (body.compare_at_price) {
+            body.compare_at_price = body.compare_at_price.replace(',', '.');
+        } else {
+            body.compare_at_price = undefined;
+        }
+
         const product = await createProduct(request.currentUser!.tenantId, body);
         return reply.code(201).send(product);
     });
@@ -40,8 +49,19 @@ export async function productRoutes(fastify: FastifyInstance) {
     // PUT /products/:id
     fastify.put('/products/:id', { preHandler: [authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {
         const { id } = request.params as { id: string };
-        const body = request.body as Record<string, unknown>;
-        const product = await updateProduct(id, request.currentUser!.tenantId, body as Parameters<typeof updateProduct>[2]);
+        const body = request.body as {
+            title?: string; description?: string; vendor?: string;
+            product_type?: string; tags?: string; sku?: string;
+            price?: string; compare_at_price?: string;
+            inventory_qty?: number; image_url?: string;
+            auto_sync?: boolean;
+        };
+
+        if (body.price) body.price = body.price.replace(',', '.');
+        if (body.compare_at_price) body.compare_at_price = body.compare_at_price.replace(',', '.');
+        else if (body.compare_at_price === '') body.compare_at_price = undefined;
+
+        const product = await updateProduct(id, request.currentUser!.tenantId, body);
         return reply.send(product);
     });
 
