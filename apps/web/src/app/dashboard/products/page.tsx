@@ -75,7 +75,7 @@ export default function ProductsPage() {
         setSyncing(id);
         setMessage('');
         try {
-            await apiFetch(`/products/${id}/sync-shopify`, { method: 'POST' });
+            await apiFetch(`/products/${id}/sync-shopify`, { method: 'POST', body: JSON.stringify({}) });
             setMessage('✅ Produto sincronizado com a Shopify!');
             loadProducts();
         } catch (err) {
