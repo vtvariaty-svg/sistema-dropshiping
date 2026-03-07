@@ -64,8 +64,8 @@ export default function ProductsPage() {
                 auto_sync: true,
             });
             loadProducts();
-        } catch {
-            setMessage('❌ Erro ao criar produto');
+        } catch (err) {
+            setMessage(`❌ Erro ao criar produto: ${err instanceof Error ? err.message : 'Desconhecido'}`);
         } finally {
             setSaving(false);
         }
@@ -78,8 +78,8 @@ export default function ProductsPage() {
             await apiFetch(`/products/${id}/sync-shopify`, { method: 'POST' });
             setMessage('✅ Produto sincronizado com a Shopify!');
             loadProducts();
-        } catch {
-            setMessage('❌ Falha na sincronização');
+        } catch (err) {
+            setMessage(`❌ Falha na sincronização: ${err instanceof Error ? err.message : 'Desconhecido'}`);
         } finally {
             setSyncing(null);
         }

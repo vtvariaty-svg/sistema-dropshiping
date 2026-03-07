@@ -150,6 +150,7 @@ export async function syncProductToShopify(productId: string, tenantId: string) 
         variants: [{
             price: product.price.toString(),
             sku: product.sku ?? undefined,
+            inventory_management: 'shopify',
             inventory_quantity: product.inventory_qty,
             compare_at_price: product.compare_at_price?.toString() ?? undefined,
         }],

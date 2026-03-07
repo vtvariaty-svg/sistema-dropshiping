@@ -96,6 +96,7 @@ export interface ShopifyProductInput {
     variants: Array<{
         price: string;
         sku?: string;
+        inventory_management?: string;
         inventory_quantity?: number;
         option1?: string;
         compare_at_price?: string;
