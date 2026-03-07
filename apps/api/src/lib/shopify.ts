@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { logger } from './logger';
 
-const SHOPIFY_SCOPES = 'read_orders,write_fulfillments,read_products';
+const SHOPIFY_SCOPES = 'read_orders,write_orders,write_fulfillments,read_products,write_products,read_shipping';
 const SHOPIFY_API_VERSION = '2024-01';
 
 export function buildOAuthUrl(shop: string, apiKey: string, redirectUri: string, state: string): string {
@@ -83,4 +83,78 @@ export async function fetchShopifyOrder(shop: string, accessToken: string, order
     }
     const data = await res.json() as { order: Record<string, unknown> };
     return data.order;
+}
+
+// ─── MODULE 10: Product Sync ─────────────────────────────────────
+
+export interface ShopifyProductInput {
+    title: string;
+    body_html: string;
+    vendor?: string;
+    product_type?: string;
+    tags?: string;
+    variants: Array<{
+        price: string;
+        sku?: string;
+        inventory_quantity?: number;
+        option1?: string;
+        compare_at_price?: string;
+    }>;
+    images?: Array<{ src: string }>;
+}
+
+export async function createShopifyProduct(
+    shop: string, accessToken: string, product: ShopifyProductInput,
+): Promise<{ id: number; title: string; handle: string; variants: Array<{ id: number; sku: string }> }> {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products.json`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': accessToken,
+        },
+        body: JSON.stringify({ product }),
+    });
+    const data = await res.json() as { product?: Record<string, unknown>; errors?: unknown };
+    if (!res.ok || !data.product) {
+        logger.error('Shopify product creation failed', { shop, errors: data.errors });
+        throw new Error(`Shopify product creation failed: ${JSON.stringify(data.errors)}`);
+    }
+    const p = data.product;
+    return {
+        id: p.id as number,
+        title: p.title as string,
+        handle: p.handle as string,
+        variants: (p.variants as Array<{ id: number; sku: string }>) ?? [],
+    };
+}
+
+export async function updateShopifyProduct(
+    shop: string, accessToken: string, productId: string, product: Partial<ShopifyProductInput>,
+): Promise<void> {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products/${productId}.json`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': accessToken,
+        },
+        body: JSON.stringify({ product }),
+    });
+    if (!res.ok) {
+        const body = await res.text();
+        logger.error('Shopify product update failed', { shop, productId, body });
+        throw new Error(`Shopify product update failed: ${res.status}`);
+    }
+}
+
+export async function deleteShopifyProduct(
+    shop: string, accessToken: string, productId: string,
+): Promise<void> {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products/${productId}.json`, {
+        method: 'DELETE',
+        headers: { 'X-Shopify-Access-Token': accessToken },
+    });
+    if (!res.ok) {
+        logger.error('Shopify product delete failed', { shop, productId, status: res.status });
+        throw new Error(`Shopify product delete failed: ${res.status}`);
+    }
 }

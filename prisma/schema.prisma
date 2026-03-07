@@ -45,6 +45,7 @@ model Tenant {
   tiktok_shops             TiktokShop[]
   tiktok_webhook_entries   TiktokWebhookEntry[]
   tiktok_sync_logs         TiktokSyncLog[]
+  saas_products            SaasProduct[]
 
   @@map("tenants")
 }
@@ -733,4 +734,33 @@ model TiktokSyncLog {
   @@index([tenant_id])
   @@index([shop_id_ref])
   @@map("tiktok_sync_logs")
+}
+
+// ─── MODULE 10: Product Sync ─────────────────────────────────────
+
+model SaasProduct {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenant_id           String    @db.Uuid
+  title               String
+  description         String    @default("")
+  vendor              String?
+  product_type        String?
+  tags                String?
+  sku                 String?
+  price               Decimal   @db.Decimal(12, 2)
+  compare_at_price    Decimal?  @db.Decimal(12, 2)
+  inventory_qty       Int       @default(0)
+  image_url           String?
+  shopify_product_id  String?
+  shopify_sync_status String    @default("NOT_SYNCED")
+  shopify_synced_at   DateTime?
+  status              String    @default("ACTIVE")
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([shopify_product_id])
+  @@map("saas_products")
 }
