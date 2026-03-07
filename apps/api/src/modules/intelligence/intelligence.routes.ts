@@ -8,17 +8,17 @@ import { productSchema, rankingQuerySchema } from './intelligence.schemas';
 
 export async function intelligenceRoutes(fastify: FastifyInstance) {
     // ─── Products CRUD ────────────────────────────────────────
-    fastify.get('/products', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
+    fastify.get('/intelligence/products', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
         return reply.send(await listProducts(req.currentUser!.tenantId));
     });
 
-    fastify.post('/products', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
+    fastify.post('/intelligence/products', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
         const parsed = productSchema.safeParse(req.body);
         if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
         return reply.code(201).send(await createProduct(req.currentUser!.tenantId, parsed.data));
     });
 
-    fastify.put('/products/:id', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
+    fastify.put('/intelligence/products/:id', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
         const parsed = productSchema.partial().safeParse(req.body);
         if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
         try {
@@ -26,7 +26,7 @@ export async function intelligenceRoutes(fastify: FastifyInstance) {
         } catch (err) { return reply.code(400).send({ error: err instanceof Error ? err.message : 'Failed' }); }
     });
 
-    fastify.delete('/products/:id', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
+    fastify.delete('/intelligence/products/:id', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
         try {
             await deleteProduct(req.currentUser!.tenantId, (req.params as { id: string }).id);
             return reply.send({ ok: true });
