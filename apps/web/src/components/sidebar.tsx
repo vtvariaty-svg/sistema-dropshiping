@@ -12,6 +12,7 @@ const navItems = [
     { label: 'Painel', href: '/dashboard', icon: '📊' },
     { label: 'Shopify', href: '/dashboard/integrations/shopify', icon: '🛍️' },
     { label: 'TikTok Shop', href: '/dashboard/integrations/tiktok', icon: '🎵' },
+    { label: 'Nuvemshop', href: '/dashboard/integrations/nuvemshop', icon: '🛒' },
     { label: 'Meus Produtos', href: '/dashboard/products', icon: '📦' },
     { label: 'Pedidos', href: '/dashboard/ops/orders', icon: '🧾' },
     { label: 'Ordens de Compra', href: '/dashboard/ops/purchase-orders', icon: '🛒' },

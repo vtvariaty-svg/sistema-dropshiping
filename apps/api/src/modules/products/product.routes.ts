@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticate } from '../../middleware/authenticate';
 import {
     createProduct, updateProduct, deleteProduct,
-    listProducts, getProduct, syncProductToShopify,
+    listProducts, getProduct, syncProductToShopify, syncProductToNuvemshop
 } from './product.service';
 
 export async function productRoutes(fastify: FastifyInstance) {

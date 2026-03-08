@@ -4,6 +4,8 @@ import { getStoreWithToken } from '../shopify/shopify.service';
 import { createShopifyProduct, updateShopifyProduct, deleteShopifyProduct } from '../../lib/shopify';
 import type { ShopifyProductInput } from '../../lib/shopify';
 
+import { getStoreWithToken as getNuvemshopStoreWithToken, nuvemshopApiFetch } from '../nuvemshop/nuvemshop.service';
+
 // ─── CRUD ────────────────────────────────────────────────────────
 
 export async function createProduct(tenantId: string, data: {
@@ -35,12 +37,20 @@ export async function createProduct(tenantId: string, data: {
         },
     });
 
-    // Auto-sync to Shopify if requested
+    // Auto-sync to Shopify and Nuvemshop if requested
     if (data.auto_sync) {
         try {
             await syncProductToShopify(product.id, tenantId);
         } catch (err) {
             logger.error('Auto-sync to Shopify failed', {
+                productId: product.id,
+                error: err instanceof Error ? err.message : 'unknown',
+            });
+        }
+        try {
+            await syncProductToNuvemshop(product.id, tenantId);
+        } catch (err) {
+            logger.warn('Auto-sync to Nuvemshop skipped or failed', {
                 productId: product.id,
                 error: err instanceof Error ? err.message : 'unknown',
             });
@@ -69,15 +79,27 @@ export async function updateProduct(productId: string, tenantId: string, data: {
         data: updateData,
     });
 
-    // Auto-sync update to Shopify
-    if (auto_sync && product.shopify_product_id) {
-        try {
-            await syncProductToShopify(product.id, tenantId);
-        } catch (err) {
-            logger.error('Auto-sync update failed', {
-                productId: product.id,
-                error: err instanceof Error ? err.message : 'unknown',
-            });
+    // Auto-sync update to Shopify and Nuvemshop
+    if (auto_sync) {
+        if (product.shopify_product_id) {
+            try {
+                await syncProductToShopify(product.id, tenantId);
+            } catch (err) {
+                logger.error('Auto-sync Shopify update failed', {
+                    productId: product.id,
+                    error: err instanceof Error ? err.message : 'unknown',
+                });
+            }
+        }
+        if (product.nuvemshop_product_id) {
+            try {
+                await syncProductToNuvemshop(product.id, tenantId);
+            } catch (err) {
+                logger.error('Auto-sync Nuvemshop update failed', {
+                    productId: product.id,
+                    error: err instanceof Error ? err.message : 'unknown',
+                });
+            }
         }
     }
 
@@ -101,6 +123,17 @@ export async function deleteProduct(productId: string, tenantId: string) {
         }
     }
 
+    // Delete from Nuvemshop if synced
+    if (product.nuvemshop_product_id) {
+        try {
+            await unsyncProductFromNuvemshop(productId, tenantId);
+        } catch (err) {
+            logger.error('Nuvemshop product delete failed', {
+                productId, error: err instanceof Error ? err.message : 'unknown',
+            });
+        }
+    }
+
     await prisma.saasProduct.delete({ where: { id: productId } });
     return { deleted: true };
 }
@@ -113,6 +146,7 @@ export async function listProducts(tenantId: string) {
             id: true, title: true, sku: true, price: true,
             compare_at_price: true, inventory_qty: true, image_url: true,
             shopify_product_id: true, shopify_sync_status: true, shopify_synced_at: true,
+            nuvemshop_product_id: true, nuvemshop_sync_status: true, nuvemshop_synced_at: true,
             status: true, created_at: true,
         },
     });
@@ -206,3 +240,90 @@ export async function unsyncProductFromShopify(productId: string, tenantId: stri
     logger.info('Product removed from Shopify', { productId });
     return { unsynced: true };
 }
+
+// ─── Nuvemshop Sync ──────────────────────────────────────────────
+
+export async function syncProductToNuvemshop(productId: string, tenantId: string) {
+    const product = await prisma.saasProduct.findFirst({
+        where: { id: productId, tenant_id: tenantId },
+    });
+    if (!product) throw new Error('Product not found');
+
+    const stores = await prisma.nuvemshopStore.findMany({
+        where: { tenant_id: tenantId, status: 'active' },
+    });
+    if (stores.length === 0) throw new Error('No active Nuvemshop store connected');
+
+    const store = await getNuvemshopStoreWithToken(stores[0].id, tenantId);
+    if (!store) throw new Error('Nuvemshop Store credentials not found');
+
+    const nuvemshopInput = {
+        name: { pt: product.title },
+        description: { pt: product.description ?? '' },
+        tags: product.tags ?? undefined,
+        variants: [{
+            price: product.price.toString(),
+            promotional_price: product.compare_at_price?.toString() ?? undefined,
+            stock: product.inventory_qty,
+            sku: product.sku ?? undefined,
+        }],
+        images: product.image_url ? [{ src: product.image_url }] : undefined,
+    };
+
+    if (product.nuvemshop_product_id) {
+        // Update
+        await nuvemshopApiFetch(store.store_id, store.accessToken, `/products/${product.nuvemshop_product_id}`, {
+            method: 'PUT',
+            body: JSON.stringify(nuvemshopInput),
+        });
+        await prisma.saasProduct.update({
+            where: { id: productId },
+            data: { nuvemshop_sync_status: 'SYNCED', nuvemshop_synced_at: new Date() },
+        });
+        logger.info('Product updated on Nuvemshop', { productId, nuvemshopId: product.nuvemshop_product_id });
+    } else {
+        // Create
+        const result = await nuvemshopApiFetch<{ id: number }>(store.store_id, store.accessToken, '/products', {
+            method: 'POST',
+            body: JSON.stringify(nuvemshopInput),
+        });
+
+        await prisma.saasProduct.update({
+            where: { id: productId },
+            data: {
+                nuvemshop_product_id: String(result.id),
+                nuvemshop_sync_status: 'SYNCED',
+                nuvemshop_synced_at: new Date(),
+            },
+        });
+        logger.info('Product created on Nuvemshop', { productId, nuvemshopId: result.id });
+    }
+
+    return { synced: true };
+}
+
+export async function unsyncProductFromNuvemshop(productId: string, tenantId: string) {
+    const product = await prisma.saasProduct.findFirst({
+        where: { id: productId, tenant_id: tenantId },
+    });
+    if (!product || !product.nuvemshop_product_id) throw new Error('Product not synced to Nuvemshop');
+
+    const stores = await prisma.nuvemshopStore.findMany({
+        where: { tenant_id: tenantId, status: 'active' },
+    });
+    if (stores.length === 0) throw new Error('No active Nuvemshop store');
+
+    const store = await getNuvemshopStoreWithToken(stores[0].id, tenantId);
+    if (!store) throw new Error('Store not found');
+
+    await nuvemshopApiFetch(store.store_id, store.accessToken, `/products/${product.nuvemshop_product_id}`, { method: 'DELETE' });
+
+    await prisma.saasProduct.update({
+        where: { id: productId },
+        data: { nuvemshop_product_id: null, nuvemshop_sync_status: 'NOT_SYNCED', nuvemshop_synced_at: null },
+    });
+
+    logger.info('Product removed from Nuvemshop', { productId });
+    return { unsynced: true };
+}
+

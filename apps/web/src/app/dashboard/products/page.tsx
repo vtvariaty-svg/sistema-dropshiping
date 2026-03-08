@@ -14,6 +14,9 @@ interface ProductRow {
     shopify_product_id: string | null;
     shopify_sync_status: string;
     shopify_synced_at: string | null;
+    nuvemshop_product_id: string | null;
+    nuvemshop_sync_status: string;
+    nuvemshop_synced_at: string | null;
     status: string;
     created_at: string;
 }
@@ -72,14 +75,28 @@ export default function ProductsPage() {
     };
 
     const handleSync = async (id: string) => {
-        setSyncing(id);
+        setSyncing(id + '_shopify');
         setMessage('');
         try {
             await apiFetch(`/products/${id}/sync-shopify`, { method: 'POST', body: JSON.stringify({}) });
             setMessage('✅ Produto sincronizado com a Shopify!');
             loadProducts();
         } catch (err) {
-            setMessage(`❌ Falha na sincronização: ${err instanceof Error ? err.message : 'Desconhecido'}`);
+            setMessage(`❌ Falha na sincronização (Shopify): ${err instanceof Error ? err.message : 'Desconhecido'}`);
+        } finally {
+            setSyncing(null);
+        }
+    };
+
+    const handleNuvemshopSync = async (id: string) => {
+        setSyncing(id + '_nuvemshop');
+        setMessage('');
+        try {
+            await apiFetch(`/products/${id}/sync-nuvemshop`, { method: 'POST', body: JSON.stringify({}) });
+            setMessage('✅ Produto sincronizado com a Nuvemshop!');
+            loadProducts();
+        } catch (err) {
+            setMessage(`❌ Falha na sincronização (Nuvemshop): ${err instanceof Error ? err.message : 'Desconhecido'}`);
         } finally {
             setSyncing(null);
         }
@@ -107,7 +124,7 @@ export default function ProductsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-white">📦 Produtos</h1>
-                    <p className="text-white/40 mt-1">Cadastre produtos e publique automaticamente na Shopify</p>
+                    <p className="text-white/40 mt-1">Cadastre produtos e publique automaticamente na Shopify e Nuvemshop</p>
                 </div>
                 <button onClick={() => setShowForm(!showForm)} className="btn-primary">
                     {showForm ? 'Cancelar' : '+ Novo Produto'}
@@ -191,7 +208,7 @@ export default function ProductsPage() {
                             <input type="checkbox" checked={formData.auto_sync}
                                 onChange={(e) => setFormData({ ...formData, auto_sync: e.target.checked })}
                                 className="rounded" />
-                            🛍️ Publicar automaticamente na Shopify
+                            🛍️ Publicar automaticamente na Shopify e Nuvemshop
                         </label>
                     </div>
                     <div className="flex justify-end pt-2">
@@ -215,7 +232,8 @@ export default function ProductsPage() {
                                     <th className="text-left py-3 px-2 text-white/40 font-medium">SKU</th>
                                     <th className="text-right py-3 px-2 text-white/40 font-medium">Preço</th>
                                     <th className="text-center py-3 px-2 text-white/40 font-medium">Estoque</th>
-                                    <th className="text-left py-3 px-2 text-white/40 font-medium">Shopify</th>
+                                    <th className="text-center py-3 px-2 text-white/40 font-medium">Shopify</th>
+                                    <th className="text-center py-3 px-2 text-white/40 font-medium">Nuvemshop</th>
                                     <th className="text-right py-3 px-2 text-white/40 font-medium">Ações</th>
                                 </tr>
                             </thead>
@@ -235,26 +253,47 @@ export default function ProductsPage() {
                                             R$ {Number(p.price).toFixed(2)}
                                         </td>
                                         <td className="py-3 px-2 text-center text-white/50 text-xs">{p.inventory_qty}</td>
-                                        <td className="py-3 px-2">
+                                        <td className="py-3 px-2 text-center">
                                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${syncColor(p.shopify_sync_status)}`}>
                                                 {p.shopify_sync_status === 'SYNCED' ? '✅ Sincronizado' : '⏳ Não Sincronizado'}
                                             </span>
                                         </td>
-                                        <td className="py-3 px-2 text-right space-x-3">
+                                        <td className="py-3 px-2 text-center">
+                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${syncColor(p.nuvemshop_sync_status)}`}>
+                                                {p.nuvemshop_sync_status === 'SYNCED' ? '✅ Sincronizado' : '⏳ Não Sincronizado'}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-right space-x-2">
+                                            {/* Shopify Actions */}
                                             {p.shopify_sync_status !== 'SYNCED' && (
-                                                <button onClick={() => handleSync(p.id)} disabled={syncing === p.id}
-                                                    className="text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50">
-                                                    {syncing === p.id ? 'Sincronizando...' : '🛍️ Sync Shopify'}
+                                                <button onClick={() => handleSync(p.id)} disabled={syncing !== null}
+                                                    className="inline-block text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50">
+                                                    {syncing === p.id + '_shopify' ? 'Sincronizando...' : '🛍️ Sync Shopify'}
                                                 </button>
                                             )}
                                             {p.shopify_sync_status === 'SYNCED' && (
-                                                <button onClick={() => handleSync(p.id)} disabled={syncing === p.id}
-                                                    className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50">
-                                                    {syncing === p.id ? 'Atualizando...' : '🔄 Atualizar'}
+                                                <button onClick={() => handleSync(p.id)} disabled={syncing !== null}
+                                                    className="inline-block text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50">
+                                                    {syncing === p.id + '_shopify' ? 'Atualizando...' : '🔄 Shop'}
                                                 </button>
                                             )}
+                                            
+                                            {/* Nuvemshop Actions */}
+                                            {p.nuvemshop_sync_status !== 'SYNCED' && (
+                                                <button onClick={() => handleNuvemshopSync(p.id)} disabled={syncing !== null}
+                                                    className="inline-block text-xs text-brand-400 hover:text-brand-300 disabled:opacity-50 border-l border-white/10 pl-2">
+                                                    {syncing === p.id + '_nuvemshop' ? 'Sincronizando...' : '🛒 Sync Nuvemshop'}
+                                                </button>
+                                            )}
+                                            {p.nuvemshop_sync_status === 'SYNCED' && (
+                                                <button onClick={() => handleNuvemshopSync(p.id)} disabled={syncing !== null}
+                                                    className="inline-block text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50 border-l border-white/10 pl-2">
+                                                    {syncing === p.id + '_nuvemshop' ? 'Atualizando...' : '🔄 Nuvem'}
+                                                </button>
+                                            )}
+
                                             <button onClick={() => handleDelete(p.id)}
-                                                className="text-xs text-red-400 hover:text-red-300">
+                                                className="inline-block text-xs text-red-400 hover:text-red-300 border-l border-white/10 pl-2">
                                                 🗑️ Excluir
                                             </button>
                                         </td>

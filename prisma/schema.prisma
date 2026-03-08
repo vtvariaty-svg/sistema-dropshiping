@@ -46,6 +46,8 @@ model Tenant {
   tiktok_webhook_entries   TiktokWebhookEntry[]
   tiktok_sync_logs         TiktokSyncLog[]
   saas_products            SaasProduct[]
+  nuvemshop_stores         NuvemshopStore[]
+  nuvemshop_webhooks       NuvemshopWebhook[]
 
   @@map("tenants")
 }
@@ -163,6 +165,7 @@ model Order {
   channel               String    @default("SHOPIFY")
   store_id              String?   @db.Uuid
   tiktok_shop_id        String?   @db.Uuid
+  nuvemshop_store_id    String?   @db.Uuid
   external_order_id     String
   external_order_number String
   financial_status      String
@@ -179,6 +182,7 @@ model Order {
   tenant         Tenant        @relation(fields: [tenant_id], references: [id])
   store          ShopifyStore? @relation(fields: [store_id], references: [id])
   tiktok_shop    TiktokShop?   @relation("tiktok_orders", fields: [tiktok_shop_id], references: [id])
+  nuvemshop_store NuvemshopStore? @relation(fields: [nuvemshop_store_id], references: [id])
   items          OrderItem[]
   addresses      OrderAddress[]
   events         OrderEvent[]
@@ -754,6 +758,9 @@ model SaasProduct {
   shopify_product_id  String?
   shopify_sync_status String    @default("NOT_SYNCED")
   shopify_synced_at   DateTime?
+  nuvemshop_product_id  String?
+  nuvemshop_sync_status String    @default("NOT_SYNCED")
+  nuvemshop_synced_at   DateTime?
   status              String    @default("ACTIVE")
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
@@ -764,3 +771,44 @@ model SaasProduct {
   @@index([shopify_product_id])
   @@map("saas_products")
 }
+
+// ─── MODULE 11: Nuvemshop Integration ────────────────────────────
+
+model NuvemshopStore {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenant_id        String   @db.Uuid
+  store_id         String
+  name             String
+  access_token_enc String
+  status           String   @default("active") // "active", "inactive"
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  tenant     Tenant            @relation(fields: [tenant_id], references: [id])
+  orders     Order[]
+  webhooks   NuvemshopWebhook[]
+
+  @@index([tenant_id])
+  @@index([store_id])
+  @@map("nuvemshop_stores")
+}
+
+model NuvemshopWebhook {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenant_id    String   @db.Uuid
+  store_id_ref String?  @db.Uuid
+  topic        String
+  payload_raw  Json
+  status       String   @default("RECEIVED")
+  error        String?
+  created_at   DateTime @default(now())
+
+  tenant Tenant           @relation(fields: [tenant_id], references: [id])
+  store  NuvemshopStore?  @relation(fields: [store_id_ref], references: [id])
+
+  @@index([tenant_id])
+  @@index([store_id_ref])
+  @@index([status])
+  @@map("nuvemshop_webhooks")
+}
+

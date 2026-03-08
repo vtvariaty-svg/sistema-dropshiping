@@ -18,6 +18,8 @@ import { intelligenceRoutes } from './modules/intelligence/intelligence.routes';
 import { marketSignalRoutes } from './modules/market-signals/market-signals.routes';
 import { tiktokIntegrationRoutes, tiktokWebhookRoutes } from './modules/tiktok/tiktok.routes';
 import { productRoutes } from './modules/products/product.routes';
+import { nuvemshopRoutes } from './modules/nuvemshop/nuvemshop.routes';
+import { nuvemshopWebhookRoutes } from './modules/nuvemshop/nuvemshop.webhook.routes';
 import { logger } from './lib/logger';
 
 export async function buildApp() {
@@ -49,10 +51,12 @@ export async function buildApp() {
     await app.register(marketSignalRoutes);
     await app.register(tiktokIntegrationRoutes);
     await app.register(productRoutes);
+    await app.register(nuvemshopRoutes, { prefix: '/nuvemshop' });
 
     // Webhook receivers (encapsulated — custom JSON parsers)
     await app.register(webhookRoutes, { prefix: '/webhooks/shopify' });
     await app.register(tiktokWebhookRoutes, { prefix: '/webhooks/tiktok-shop' });
+    await app.register(nuvemshopWebhookRoutes, { prefix: '/webhooks' });
 
     // Health check
     app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));

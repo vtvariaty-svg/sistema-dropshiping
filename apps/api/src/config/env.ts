@@ -23,6 +23,9 @@ const envSchema = z.object({
     TIKTOK_SHOP_APP_URL: z.string().default(''),
     TIKTOK_SHOP_WEBHOOK_SECRET: z.string().default(''),
     TIKTOK_SHOP_API_BASE_URL: z.string().default('https://open-api.tiktokglobalshop.com'),
+    // Module 11: Nuvemshop
+    NUVEMSHOP_CLIENT_ID: z.string().default(''),
+    NUVEMSHOP_CLIENT_SECRET: z.string().default(''),
 });
 
 function loadEnv() {

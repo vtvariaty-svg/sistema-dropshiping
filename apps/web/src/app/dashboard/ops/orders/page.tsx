@@ -68,6 +68,7 @@ export default function OrdersPage() {
                     <option value="">Todos (Canal)</option>
                     <option value="SHOPIFY">🛍️ Shopify</option>
                     <option value="TIKTOK_SHOP">🎵 TikTok Shop</option>
+                    <option value="NUVEMSHOP">🛒 Nuvemshop</option>
                 </select>
                 <span className="text-white/30 text-sm self-center">{total} pedidos</span>
             </div>
@@ -88,7 +89,7 @@ export default function OrdersPage() {
                             <tbody>{orders.map((o) => (
                                 <tr key={o.id} className="border-b border-white/5 hover:bg-white/[0.02]">
                                     <td className="py-3 px-2 text-white font-mono text-xs">#{o.external_order_number}</td>
-                                    <td className="py-3 px-2 text-xs">{o.channel === 'TIKTOK_SHOP' ? '🎵' : '🛍️'}</td>
+                                    <td className="py-3 px-2 text-xs">{o.channel === 'TIKTOK_SHOP' ? '🎵' : o.channel === 'NUVEMSHOP' ? '🛒' : '🛍️'}</td>
                                     <td className="py-3 px-2"><span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor(o.financial_status)}`}>{o.financial_status}</span></td>
                                     <td className="py-3 px-2"><span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${opColor(o.operational_status)}`}>{o.operational_status ?? 'NEW'}</span></td>
                                     <td className="py-3 px-2 text-white/50 text-xs">{o.fulfillment_status ?? 'unfulfilled'}</td>
