@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Política de Privacidade — VTVariaty Dropshipping',
-    description: 'Política de Privacidade do sistema VTVariaty Dropshipping Automation.',
+    title: 'Política de Privacidade — VTvariaty DropSaas',
+    description: 'Política de Privacidade do sistema VTvariaty DropSaas Automation.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
                     <section>
                         <h2 className="text-lg font-semibold text-white mb-3">1. Introdução</h2>
                         <p>
-                            A <strong>VTVariaty</strong> (&quot;nós&quot;, &quot;nosso&quot; ou &quot;Empresa&quot;) opera a plataforma de automação
+                            A <strong>VTvariaty DropSaas</strong> (&quot;nós&quot;, &quot;nosso&quot; ou &quot;Empresa&quot;) opera a plataforma de automação
                             de dropshipping acessível em <strong>dropship-web.onrender.com</strong> (&quot;Plataforma&quot;).
                             Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos
                             as informações dos usuários e dos dados obtidos por meio de integrações com plataformas
@@ -117,13 +117,13 @@ export default function PrivacyPolicyPage() {
                         </p>
                         <ul className="list-none mt-3 space-y-1">
                             <li>📧 <strong>E-mail:</strong> vtvariaty@gmail.com</li>
-                            <li>🏢 <strong>Empresa:</strong> VTVariaty</li>
+                            <li>🏢 <strong>Empresa:</strong> VTvariaty DropSaas</li>
                         </ul>
                     </section>
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-white/10 text-center text-white/30 text-xs">
-                    © {new Date().getFullYear()} VTVariaty. Todos os direitos reservados.
+                    © {new Date().getFullYear()} VTvariaty DropSaas. Todos os direitos reservados.
                 </div>
             </div>
         </main>

@@ -59,7 +59,7 @@ export default function LoginPage() {
                             </svg>
                         </div>
                         <h1 className="text-4xl font-bold text-white mb-3">
-                            Dropship<span className="text-brand-400">SaaS</span>
+                            VTvariaty <span className="text-brand-400">DropSaas</span>
                         </h1>
                         <p className="text-lg text-white/60 max-w-md">
                             Automatize suas operações de dropshipping. Gerencie pedidos, acompanhe fornecedores e escale seu negócio com inteligência.
@@ -86,7 +86,7 @@ export default function LoginPage() {
                 <div className="w-full max-w-md">
                     <div className="lg:hidden mb-10 text-center">
                         <h1 className="text-3xl font-bold text-white">
-                            Dropship<span className="text-brand-400">SaaS</span>
+                            VTvariaty <span className="text-brand-400">DropSaas</span>
                         </h1>
                     </div>
 

@@ -57,7 +57,7 @@ export function Sidebar({ user, open, onClose }: SidebarProps) {
                         </svg>
                     </div>
                     <span className="text-lg font-bold text-white">
-                        Drop<span className="text-brand-400">SaaS</span>
+                        VTvariaty <span className="text-brand-400">DropSaas</span>
                     </span>
                 </div>
 

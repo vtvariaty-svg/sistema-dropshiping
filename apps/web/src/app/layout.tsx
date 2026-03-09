@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-    title: 'Dropship SaaS — Operations Automation Platform',
+    title: 'VTvariaty DropSaas — Operations Automation Platform',
     description: 'Multi-tenant SaaS for dropshipping automation and product intelligence',
 };
 
