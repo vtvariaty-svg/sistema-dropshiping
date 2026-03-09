@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticate } from '../../middleware/authenticate';
 import { prisma } from '../../lib/prisma';
+import { env } from '../../config/env';
+import { logger } from '../../lib/logger';
 import { getInstallUrl, authorizeCallback } from './nuvemshop.service';
 
 export async function nuvemshopRoutes(fastify: FastifyInstance) {
@@ -8,32 +10,32 @@ export async function nuvemshopRoutes(fastify: FastifyInstance) {
     // ─── OAuth Flow ────────────────────────────────────────────────
     
     // Step 1: Redirect to Nuvemshop OAuth
-    fastify.get('/auth/install', async (_, reply: FastifyReply) => {
+    fastify.get('/auth/install', { preHandler: [authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const url = getInstallUrl();
-            return reply.redirect(url);
+            const url = getInstallUrl(request.currentUser!.tenantId);
+            return reply.send({ url });
         } catch (err) {
             return reply.code(400).send({ error: err instanceof Error ? err.message : 'Install failed' });
         }
     });
 
-    // Step 2: Callback from Nuvemshop (Receives ?code=XYZ)
+    // Step 2: Callback from Nuvemshop (Receives ?code=XYZ&state=ABC)
     fastify.get('/auth/callback', async (request: FastifyRequest, reply: FastifyReply) => {
-        const { code } = request.query as { code?: string };
+        const { code, state } = request.query as { code?: string; state?: string };
         if (!code) return reply.code(400).send({ error: 'Missing authorization code' });
-
-        // Since this redirect is out-of-band (Shopify/Nuvemshop redirects the merchant directly),
-        // we might not have a clean session here via cookie (cross-site Cookie rules).
-        // For security, a real SaaS generates a 'state' token encoding the tenantId.
-        // As a shortcut, we assume the user is logged in via their browser cookie:
-        await authenticate(request, reply);
+        if (!state) return reply.code(400).send({ error: 'Missing state' });
         
         try {
-            await authorizeCallback(code, request.currentUser!.tenantId);
+            // Verify state to get tenantId
+            const { verifyState } = require('./nuvemshop.service');
+            const tenantId = verifyState(state);
+
+            await authorizeCallback(code, tenantId);
             // Redirect back to dashboard integrations page
-            return reply.redirect('/dashboard/integrations/nuvemshop?success=1');
+            return reply.redirect(`${env.WEB_BASE_URL}/dashboard/integrations/nuvemshop?success=1`);
         } catch (err) {
-            return reply.redirect(`/dashboard/integrations/nuvemshop?error=${encodeURIComponent(err instanceof Error ? err.message : 'Unknown')}`);
+            logger.error('Nuvemshop callback error', { error: err instanceof Error ? err.message : 'Unknown' });
+            return reply.redirect(`${env.WEB_BASE_URL}/dashboard/integrations/nuvemshop?error=${encodeURIComponent(err instanceof Error ? err.message : 'Unknown')}`);
         }
     });
 

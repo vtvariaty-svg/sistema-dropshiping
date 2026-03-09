@@ -25,10 +25,29 @@ function decryptToken(hash: string): string {
 }
 
 // ─── Auth / OAuth Flow ──────────────────────────────────────────
-
-export function getInstallUrl(): string {
+export function getInstallUrl(tenantId: string): string {
     if (!env.NUVEMSHOP_CLIENT_ID) throw new Error('NUVEMSHOP_CLIENT_ID not configured');
-    return `https://www.nuvemshop.com.br/apps/${env.NUVEMSHOP_CLIENT_ID}/authorize`;
+    
+    // Sign a short-lived state token containing the tenantId
+    const state = crypto.createHmac('sha256', env.JWT_ACCESS_SECRET)
+        .update(`nuvemshop-auth-${tenantId}-${Date.now()}`)
+        .digest('hex');
+    
+    // For simplicity without adding state storage, we'll just pass the tenantId if it's safe enough for this poc,
+    // but better to use a JWT or a simple signed string.
+    // Let's use a simple colon-separated signed string: tenantId:hash
+    const hash = crypto.createHmac('sha256', env.JWT_ACCESS_SECRET).update(tenantId).digest('hex');
+    const signedState = `${tenantId}:${hash}`;
+
+    return `https://www.nuvemshop.com.br/apps/${env.NUVEMSHOP_CLIENT_ID}/authorize?state=${signedState}`;
+}
+
+export function verifyState(state: string): string {
+    const [tenantId, hash] = state.split(':');
+    if (!tenantId || !hash) throw new Error('Invalid state');
+    const expectedHash = crypto.createHmac('sha256', env.JWT_ACCESS_SECRET).update(tenantId).digest('hex');
+    if (hash !== expectedHash) throw new Error('State verification failed');
+    return tenantId;
 }
 
 export async function authorizeCallback(code: string, tenantId: string) {

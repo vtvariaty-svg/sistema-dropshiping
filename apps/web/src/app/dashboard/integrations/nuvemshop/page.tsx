@@ -41,9 +41,15 @@ export default function NuvemshopIntegration() {
         finally { setLoading(false); }
     };
 
-    const handleConnect = () => {
-        // Redirect to Backend to start OAuth flow
-        window.location.href = `${API_BASE}/nuvemshop/auth/install`;
+    const handleConnect = async () => {
+        try {
+            const data = await apiFetch<{ url: string }>('/nuvemshop/auth/install');
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            setMessage(`❌ Erro ao iniciar conexão: ${err instanceof Error ? err.message : 'Desconhecido'}`);
+        }
     };
 
     const handleDisconnect = async (id: string) => {
